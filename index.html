@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>晋陕三日路书 🚗</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #FFF8F0;
+    font-family: 'Noto Sans SC', 'PingFang SC', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ===== 封面 ===== */
+  .cover {
+    background: linear-gradient(160deg, #FF6B35 0%, #F7931E 40%, #FFD700 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    padding: 40px 20px;
+  }
+
+  .cover::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 180px;
+    background: #FFF8F0;
+    clip-path: ellipse(60% 100% at 50% 100%);
+  }
+
+  /* 云朵 */
+  .cloud {
+    position: absolute;
+    background: rgba(255,255,255,0.6);
+    border-radius: 50px;
+  }
+  .cloud::before, .cloud::after {
+    content: '';
+    position: absolute;
+    background: rgba(255,255,255,0.6);
+    border-radius: 50%;
+  }
+  .cloud-1 { width: 100px; height: 35px; top: 8%; left: 5%; }
+  .cloud-1::before { width: 50px; height: 50px; top: -25px; left: 15px; }
+  .cloud-1::after { width: 35px; height: 35px; top: -15px; left: 45px; }
+  .cloud-2 { width: 80px; height: 28px; top: 15%; right: 8%; }
+  .cloud-2::before { width: 40px; height: 40px; top: -20px; left: 10px; }
+  .cloud-2::after { width: 28px; height: 28px; top: -12px; left: 38px; }
+  .cloud-3 { width: 60px; height: 22px; top: 5%; right: 30%; }
+  .cloud-3::before { width: 30px; height: 30px; top: -15px; left: 8px; }
+  .cloud-3::after { width: 22px; height: 22px; top: -10px; left: 28px; }
+
+  /* 山脉装饰 */
+  .mountains {
+    position: absolute;
+    bottom: 160px;
+    left: 0; right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 0;
+  }
+  .mountain {
+    width: 0; height: 0;
+    border-left: solid transparent;
+    border-right: solid transparent;
+    border-bottom: solid;
+  }
+  .mt1 { border-left-width: 60px; border-right-width: 60px; border-bottom-width: 100px; border-bottom-color: #c0392b; margin-bottom: 0; position: relative; top: 20px; }
+  .mt2 { border-left-width: 80px; border-right-width: 80px; border-bottom-width: 130px; border-bottom-color: #e74c3c; }
+  .mt3 { border-left-width: 55px; border-right-width: 55px; border-bottom-width: 90px; border-bottom-color: #c0392b; position: relative; top: 30px; }
+  .mt4 { border-left-width: 70px; border-right-width: 70px; border-bottom-width: 110px; border-bottom-color: #e67e22; position: relative; top: 10px; }
+  .mt5 { border-left-width: 50px; border-right-width: 50px; border-bottom-width: 80px; border-bottom-color: #d35400; position: relative; top: 40px; }
+
+  .cover-title {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .cover-title h1 {
+    font-size: 3.2em;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 3px 4px 0px rgba(0,0,0,0.2);
+    letter-spacing: 4px;
+    line-height: 1.2;
+  }
+  .cover-title .subtitle {
+    font-size: 1.1em;
+    color: rgba(255,255,255,0.9);
+    margin-top: 10px;
+    letter-spacing: 2px;
+  }
+  .cover-title .emoji-row {
+    font-size: 2.5em;
+    margin: 15px 0;
+    letter-spacing: 8px;
+  }
+
+  .cover-info {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 20px;
+  }
+  .cover-badge {
+    background: rgba(255,255,255,0.25);
+    border: 2px solid rgba(255,255,255,0.6);
+    border-radius: 30px;
+    padding: 8px 20px;
+    color: #fff;
+    font-size: 0.95em;
+    font-weight: 700;
+    backdrop-filter: blur(4px);
+  }
+
+  /* 小车装饰 */
+  .car-deco {
+    position: absolute;
+    bottom: 175px;
+    right: 60px;
+    font-size: 3em;
+    animation: drive 3s ease-in-out infinite;
+    z-index: 5;
+  }
+  @keyframes drive {
+    0%, 100% { transform: translateY(0) rotate(-2deg); }
+    50% { transform: translateY(-8px) rotate(2deg); }
+  }
+
+  /* ===== 路线总览 ===== */
+  .route-overview {
+    background: #fff;
+    margin: 40px 20px;
+    border-radius: 24px;
+    padding: 30px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    border: 3px solid #FFD700;
+    position: relative;
+    overflow: hidden;
+  }
+  .route-overview::before {
+    content: '🗺️';
+    position: absolute;
+    top: -10px; right: 20px;
+    font-size: 4em;
+    opacity: 0.15;
+  }
+  .section-title {
+    font-size: 1.5em;
+    font-weight: 900;
+    color: #FF6B35;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .route-line {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 12px 0;
+  }
+  .route-city {
+    background: linear-gradient(135deg, #FF6B35, #F7931E);
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .route-arrow {
+    color: #FF6B35;
+    font-size: 1.2em;
+    font-weight: 900;
+  }
+  .route-day-label {
+    font-size: 0.8em;
+    color: #999;
+    margin-right: 6px;
+    font-weight: 700;
+  }
+
+  /* ===== 主内容区 ===== */
+  .main-content {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 16px 60px;
+  }
+
+  /* ===== 日程卡片 ===== */
+  .day-card {
+    margin-bottom: 50px;
+    position: relative;
+  }
+
+  .day-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    position: relative;
+  }
+  .day-badge {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    flex-shrink: 0;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    border: 3px solid #fff;
+  }
+  .day-badge .day-num { font-size: 1.6em; line-height: 1; }
+  .day-badge .day-text { font-size: 0.65em; letter-spacing: 1px; }
+  .day1 .day-badge { background: linear-gradient(135deg, #FF6B35, #FF8C42); color: #fff; }
+  .day2 .day-badge { background: linear-gradient(135deg, #E74C3C, #C0392B); color: #fff; }
+  .day3 .day-badge { background: linear-gradient(135deg, #8E44AD, #6C3483); color: #fff; }
+
+  .day-title-block h2 {
+    font-size: 1.6em;
+    font-weight: 900;
+    color: #2c3e50;
+    line-height: 1.3;
+  }
+  .day-route-tag {
+    display: inline-block;
+    margin-top: 6px;
+    font-size: 0.82em;
+    color: #888;
+    background: #f5f5f5;
+    padding: 3px 12px;
+    border-radius: 12px;
+  }
+
+  /* ===== 时间轴 ===== */
+  .timeline {
+    position: relative;
+    padding-left: 28px;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 0; bottom: 0;
+    width: 3px;
+    border-radius: 3px;
+  }
+  .day1 .timeline::before { background: linear-gradient(to bottom, #FF6B35, #FFD700); }
+  .day2 .timeline::before { background: linear-gradient(to bottom, #E74C3C, #F39C12); }
+  .day3 .timeline::before { background: linear-gradient(to bottom, #8E44AD, #3498DB); }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 16px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .timeline-dot {
+    position: absolute;
+    left: -24px;
+    top: 12px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    flex-shrink: 0;
+    z-index: 1;
+  }
+  .dot-drive { background: #3498DB; }
+  .dot-eat { background: #E74C3C; }
+  .dot-play { background: #27AE60; }
+  .dot-stay { background: #9B59B6; }
+  .dot-transit { background: #F39C12; }
+  .dot-rest { background: #95A5A6; }
+
+  .item-card {
+    flex: 1;
+    background: #fff;
+    border-radius: 16px;
+    padding: 14px 16px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.07);
+    border-left: 4px solid transparent;
+    transition: transform 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .item-card:hover { transform: translateX(4px); }
+  .item-card.drive { border-left-color: #3498DB; background: linear-gradient(to right, #EBF5FB, #fff); }
+  .item-card.eat { border-left-color: #E74C3C; background: linear-gradient(to right, #FDEDEC, #fff); }
+  .item-card.play { border-left-color: #27AE60; background: linear-gradient(to right, #EAFAF1, #fff); }
+  .item-card.stay { border-left-color: #9B59B6; background: linear-gradient(to right, #F5EEF8, #fff); }
+  .item-card.transit { border-left-color: #F39C12; background: linear-gradient(to right, #FEF9E7, #fff); }
+  .item-card.rest { border-left-color: #95A5A6; background: linear-gradient(to right, #F2F3F4, #fff); }
+
+  .item-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+  .item-time {
+    font-size: 0.82em;
+    font-weight: 900;
+    color: #fff;
+    background: #2c3e50;
+    padding: 3px 10px;
+    border-radius: 10px;
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+  }
+  .item-icon { font-size: 1.3em; }
+  .item-title {
+    font-size: 1em;
+    font-weight: 700;
+    color: #2c3e50;
+    flex: 1;
+  }
+  .item-tag {
+    font-size: 0.72em;
+    padding: 2px 8px;
+    border-radius: 8px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .tag-drive { background: #D6EAF8; color: #2980B9; }
+  .tag-eat { background: #FADBD8; color: #C0392B; }
+  .tag-play { background: #D5F5E3; color: #1E8449; }
+  .tag-stay { background: #E8DAEF; color: #7D3C98; }
+  .tag-transit { background: #FDEBD0; color: #D35400; }
+  .tag-rest { background: #EAECEE; color: #626567; }
+
+  .item-meta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+  .meta-chip {
+    font-size: 0.78em;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+  .meta-chip .chip-icon { font-size: 0.9em; }
+
+  .item-tip {
+    font-size: 0.82em;
+    color: #555;
+    background: rgba(255,255,255,0.7);
+    border-radius: 8px;
+    padding: 6px 10px;
+    border-left: 3px solid #FFD700;
+    line-height: 1.5;
+    margin-top: 6px;
+  }
+  .item-tip::before { content: '💡 '; }
+
+  /* ===== 分隔装饰 ===== */
+  .day-divider {
+    text-align: center;
+    margin: 30px 0;
+    position: relative;
+  }
+  .day-divider::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(to right, transparent, #FFD700, transparent);
+  }
+  .day-divider span {
+    position: relative;
+    background: #FFF8F0;
+    padding: 0 16px;
+    font-size: 1.5em;
+  }
+
+  /* ===== Checklist ===== */
+  .checklist-card {
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    border-radius: 24px;
+    padding: 30px;
+    color: #fff;
+    margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .checklist-card::before {
+    content: '📋';
+    position: absolute;
+    right: 20px; top: 20px;
+    font-size: 5em;
+    opacity: 0.1;
+  }
+  .checklist-card .section-title { color: #FFD700; }
+  .checklist-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    margin-top: 16px;
+  }
+  .checklist-item {
+    background: rgba(255,255,255,0.1);
+    border-radius: 14px;
+    padding: 14px;
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  .checklist-item .ci-title {
+    font-weight: 700;
+    font-size: 0.95em;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .checklist-item .ci-desc {
+    font-size: 0.8em;
+    color: rgba(255,255,255,0.75);
+    line-height: 1.5;
+  }
+
+  /* ===== 页脚 ===== */
+  .footer {
+    text-align: center;
+    padding: 30px 20px;
+    color: #aaa;
+    font-size: 0.85em;
+  }
+  .footer .footer-emoji { font-size: 2em; margin-bottom: 8px; }
+
+  /* ===== 响应式 ===== */
+  @media (max-width: 600px) {
+    .cover-title h1 { font-size: 2.2em; }
+    .day-title-block h2 { font-size: 1.3em; }
+    .item-title { font-size: 0.92em; }
+    .checklist-items { grid-template-columns: 1fr; }
+  }
+
+  /* ===== 打印优化 ===== */
+  @media print {
+    body { background: #fff; }
+    .item-card:hover { transform: none; }
+    .cover { min-height: auto; padding: 60px 20px; }
+    .floating-nav { display: none; }
+  }
+
+  /* 滚动动画 */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  .fade-in.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ===== 悬浮导航 ===== */
+  .floating-nav {
+    position: fixed;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .floating-nav.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .nav-item {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    color: #2c3e50;
+    text-decoration: none;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+    font-size: 1.1em;
+  }
+  .nav-item:hover, .nav-item.active {
+    border-color: #FF6B35;
+    color: #FF6B35;
+    transform: scale(1.1);
+  }
+  @media (max-width: 768px) {
+    .floating-nav {
+      top: auto;
+      bottom: 20px;
+      right: 50%;
+      transform: translateX(50%);
+      flex-direction: row;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== 悬浮导航 ===== -->
+<div class="floating-nav" id="floatingNav">
+  <a href="#day1" class="nav-item">D1</a>
+  <a href="#day2" class="nav-item">D2</a>
+  <a href="#day3" class="nav-item">D3</a>
+</div>
+
+<!-- ===== 封面 ===== -->
+<div class="cover">
+  <div class="cloud cloud-1"></div>
+  <div class="cloud cloud-2"></div>
+  <div class="cloud cloud-3"></div>
+
+  <div class="cover-title">
+    <div class="emoji-row">🚂 🌊 🏜️ 🏯</div>
+    <h1>晋陕三日路书</h1>
+    <p class="subtitle">西安 · 临汾 · 壶口 · 延安 · 靖边 · 榆林</p>
+  </div>
+
+  <div class="cover-info">
+    <div class="cover-badge">📅 3天2夜</div>
+    <div class="cover-badge">🚗 自驾 + 高铁</div>
+    <div class="cover-badge">🌟 黄河 · 丹霞 · 古城</div>
+  </div>
+
+  <div class="mountains">
+    <div class="mountain mt5"></div>
+    <div class="mountain mt1"></div>
+    <div class="mountain mt2"></div>
+    <div class="mountain mt3"></div>
+    <div class="mountain mt4"></div>
+    <div class="mountain mt5"></div>
+  </div>
+
+  <div class="car-deco">🚗</div>
+</div>
+
+<!-- ===== 路线总览 ===== -->
+<div class="main-content">
+  <div class="route-overview fade-in">
+    <div class="section-title">🗺️ 路线总览</div>
+
+    <div class="route-line" onclick="document.getElementById('day1').scrollIntoView({behavior: 'smooth'})" style="cursor: pointer;" title="点击跳转至第一天">
+      <span class="route-day-label">D1</span>
+      <span class="route-city">西安</span>
+      <span class="route-arrow">→</span>
+      <span class="route-city">临汾</span>
+      <span class="route-arrow">→</span>
+      <span class="route-city">壶口瀑布</span>
+      <span class="route-arrow">→</span>
+      <span class="route-city">延安 🏠</span>
+    </div>
+
+    <div class="route-line" onclick="document.getElementById('day2').scrollIntoView({behavior: 'smooth'})" style="cursor: pointer;" title="点击跳转至第二天">
+      <span class="route-day-label">D2</span>
+      <span class="route-city">延安</span>
+      <span class="route-arrow">→</span>
+      <span class="route-city">靖边波浪谷</span>
+      <span class="route-arrow">→</span>
+      <span class="route-city">麻黄梁</span>
+      <span class="route-arrow">→</span>
+      <span class="route-city">榆林 🏠</span>
+    </div>
+
+    <div class="route-line" onclick="document.getElementById('day3').scrollIntoView({behavior: 'smooth'})" style="cursor: pointer;" title="点击跳转至第三天">
+      <span class="route-day-label">D3</span>
+      <span class="route-city">榆林</span>
+      <span class="route-arrow">→</span>
+      <span class="route-city">镇北台</span>
+      <span class="route-arrow">→</span>
+      <span class="route-city">红石峡</span>
+      <span class="route-arrow">→</span>
+      <span class="route-city">西安 🏁</span>
+    </div>
+  </div>
+
+  <!-- ===== DAY 1 ===== -->
+  <div class="day-card day1 fade-in" id="day1">
+    <div class="day-header">
+      <div class="day-badge">
+        <span class="day-num">D1</span>
+        <span class="day-text">第一天</span>
+      </div>
+      <div class="day-title-block">
+        <h2>关中 → 晋南 → 黄河奇观 → 延安</h2>
+        <span class="day-route-tag">🚂 高铁出发 · 🍜 临汾吃面 · 🌊 壶口瀑布 · 🏠 延安住宿</span>
+      </div>
+    </div>
+
+    <div class="timeline">
+
+      <div class="timeline-item">
+        <div class="timeline-dot dot-transit"></div>
+        <div class="item-card transit">
+          <div class="item-header">
+            <span class="item-time">07:45</span>
+            <span class="item-icon">🚂</span>
+            <span class="item-title">西安北站出发</span>
+            <span class="item-tag tag-transit">高铁</span>
+          </div>
+          <div class="item-meta">
+            <span class="meta-chip"><span class="chip-icon">⏱️</span> 车程约 2 小时</span>
+            <span class="meta-chip"><span class="chip-icon">📍</span> 西安北站 → 临汾站</span>
+          </div>
+          <div class="item-tip">提前检票，带好身份证，高铁上可以小憩一会儿。</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot dot-transit"></div>
+        <div class="item-card transit">
+          <div class="item-header">
+            <span class="item-time">09:40</span>
+            <span class="item-icon">🚕</span>
+            <span class="item-title">抵达临汾站，打车出发</span>
+            <span class="item-tag tag-transit">打车</span>
+          </div>
+          <div class="item-meta">
+            <span class="meta-chip"><span class="chip-icon">⏱️</span> 约 10 分钟</span>
+            <span class="meta-chip"><span class="chip-icon">📍</span> 临汾站 → 白老三</span>
+          </div>
+          <div class="item-tip">出站后打车前往白老三牛肉丸子面，起步价即达。</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot dot-eat"></div>
+        <div class="item-card eat">
+          <div class="item-header">
+            <span class="item-time">10:00</span>
+            <span class="item-icon">🍜</span>
+            <span class="item-title">白老三牛肉丸子面</span>
+            <span class="item-tag tag-eat">美食</span>
+          </div>
+          <div class="item-meta">
+            <span class="meta-chip"><span class="chip-icon">⏱️</span> 用餐 40 分钟</span>
+            <span class="meta-chip"><span class="chip-icon">🌶️</span> 辣度警告</span>
+          </div>
+          <div class="item-tip">临汾灵魂早午餐！辣度不低，备好冰饮或冰镇饮料。</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot dot-transit"></div>
+        <div class="item-card transit">
+          <div class="item-header">
+            <span class="item-time">10:40</span>
+            <span class="item-icon">🚗</span>
+            <span class="item-title">神州租车取车</span>
+            <span class="item-tag tag-transit">取车</span>
+          </div>
+          <div class="item-meta">
+            <span class="meta-chip"><span class="chip-icon">📍</span> 平阳南街自助取车点</span>
+          </div>
+          <div class="item-tip">离面馆极近，步行可达。取车后验车拍照留存，记录车辆原有划痕。</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot dot-drive"></div>
+        <div class="item-card drive">
+          <div class="item-header">
+            <span class="item-time">11:00</span>
+            <span class="item-icon">🛣️</span>
+            <span class="item-title">驾车前往壶口瀑布（山西侧）</span>
+            <span class="item-tag tag-drive">自驾</span>
+          </div>
+          <div class="item-meta">
+            <span class="meta-chip"><span class="chip-icon">⏱️</span> 约 1h 48min</span>
+            <span class="meta-chip"><span class="chip-icon">📍</span> 临汾 → 壶口景区</span>
+          </div>
+          <div class="item-tip">导航"壶口瀑布山西侧停车场"，路况良好，注意区间测速。</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot dot-transit"></div>
+        <div class="item-card transit">
+          <div class="item-header">
+            <span class="item-time">12:50</span>
+            <span class="item-icon">🎫</span>
+            <span class="item-title">抵达景区，换乘景交车</span>
+            <span class="item-tag tag-transit">入园</span>
+          </div>
+          <div class="item-meta">
+            <span class="meta-chip"><span class="chip-icon">💧</span> 水雾极大</span>
+            <span class="meta-chip"><span class="chip-icon">📱</span> 手机防水</span>
+          </div>
+          <div class="item-tip">山西侧视角最壮观！进园前备好手机防水袋，水雾会打湿一切。</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot dot-play"></div>
+        <div class="item-card play">
+          <div class="item-header">
+            <span class="item-time">13:00 - 16:00</span>
+            <span class="item-icon">🌊</span>
+            <span class="item-title">游览壶口瀑布</span>
+            <span class="item-tag tag-play">游玩</span>
+          </div>
+          <div class="item-meta">
+            <span class="meta-chip"><span class="chip-icon">⏱️</span> 游玩 3 小时</span>
+            <span class="meta-chip"><span class="chip-icon">📸</span> 超级出片</span>
+          </div>
+          <div class="item-tip">核心观景台拍照 + 龙洞仰视黄河，3小时足够且不赶，感受"黄河之水天上来"！</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot dot-drive"></div>
+        <div class="item-card drive">
+          <div class="item-header">
+            <span class="item-time">16:00</span>
+            <span class="item-icon">🛣️</span>
+            <span class="item-title">驾车前往延安</span>
+            <span class="item-tag tag-drive">自驾</span>
+          </div>
+          <div class="item-meta">
+            <span class="meta-chip"><span class="chip-icon">⏱️</span> 约 2 小时</span>
+            <span class="meta-chip"><span class="chip-icon">🌅</span> 傍晚光线绝美</span>
+          </div>
+          <div class="item-tip">傍晚光线适合拍沿途黄土高原风光，注意高速区间测速。</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot dot-stay"></div>
+        <div class="item-card stay">
+          <div class="item-header">
+            <span class="item-time">18:00</span>
+            <span class="item-icon">🏨</span>
+            <span class="item-title">抵达延安，入住酒店</span>
+            <span class="item-tag tag-stay">住宿</span>
+          </div>
+          <div class="item-meta">
+            <span class="meta-chip"><span class="chip-icon">📍</span> 建议住宝塔区</span>
+            <span class="meta-chip"><span class="chip-icon">🍢</span> 二道街夜市</span>
+          </div>
+          <div class="item-tip">安顿好后，晚上可去二道街夜市觅食，感受延安烟火气。</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="day-divider"><span>✨ 晚安延安 · 明日出发 ✨</span></div>
+
+  <!-- ===== DAY 2 ===== -->
+  <div class="day-card day2 fade-in" id="day2">
+    <div class="day-header">
+      <div class="day-badge">
+        <span class="day-num">D2</span>
+        <span class="day-text">第二天</span>
+      </div>
+      <div class="day-title-block">
+        <h2>圣地延安 → 丹霞波浪 → 麻黄梁日落 → 榆林</h2>
+        <span class="day-route-tag">🏜️ 靖边波浪谷 · 🌄 麻黄梁日落 · 🏠 榆林住宿</span>
+      </div>
+    </div>
+
+    <div class="timeline">
+
+      <div class="timeline-item">
+        <div class="timeline-dot dot-drive"></div>
+        <div class="item-card drive">
+          <div class="item-header">
+            <span class="item-time">07:30</span>
+            <span class="item-icon">🌅</span>
+            <span class="item-title">延安出发，驾车北上</span>
+            <span class="item-tag tag-drive">自驾</span>
+          </div>
+          <div class="item-meta">
+            <span class="meta-chip"><span class="chip-icon">⏱️</span> 约 1.5 小时</span>
+            <span class="meta-chip"><span class="chip-icon">📍</span> 延安 → 靖边波浪谷</span>
+          </div>
+          <div class="item-tip">早起出发，避开正午暴晒，沿途黄土高原风光壮阔。</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot dot-transit"></div>
+        <div class="item-card transit">
+          <div class="item-header">
+            <span class="item-time">09:00</span>
+            <span class="item-icon">🎫</span>
+            <span class="item-title">抵达靖边波浪谷，入园</span>
+            <span class="item-tag tag-transit">入园</span>
+          </div>
+          <div class="item-meta">
+            <span class="meta-chip"><span class="chip-icon">🎟️</span> 推荐含玻璃桥套票</span>
+          </div>
+          <div class="item-tip">推荐购买含玻璃桥的套票，视野更好，体验更完整。</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot dot-play"></div>
+        <div class="item-card play">
+          <div class="item-header">
+            <span class="item-time">09:30 - 13:00</span>
+            <span class="item-icon">🏜️</span>
+            <span class="item-title">游览靖边波浪谷</span>
+            <span class="item-tag tag-play">游玩</span>
+          </div>
+          <div class="item-meta">
+            <span class="meta-chip"><span class="chip-icon">⏱️</span> 游玩 3.5 小时</span>
+            <span class="meta-chip"><span class="chip-icon">👟</span> 穿防滑鞋</span>
+          </div>
+          <div class="item-tip">重点打卡：火焰丹霞、地心丹霞。颜色越艳丽越好看，穿防滑鞋必须！</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot dot-drive"></div>
+        <div class="item-card drive">
+          <div class="item-header">
+            <span class="item-time">13:00</span>
+            <span class="item-icon">🛣️</span>
+            <span class="item-title">驾车前往麻黄梁黄土地质公园</span>
+            <span class="item-tag tag-drive">自驾</span>
+          </div>
+          <div class="item-meta">
+            <span class="meta-chip"><span class="chip-icon">⏱️</span> 约 1.5 小时</span>
+            <span class="meta-chip"><span class="chip-icon">📍</span> 靖边 → 麻黄梁</span>
+          </div>
+          <div class="item-tip">前往榆林方向的黄土风光过渡带，沿途可顺路解决午餐。</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot dot-rest"></div>
+        <div class="item-card rest">
+          <div class="item-header">
+            <span class="item-time">14:30</span>
+            <span class="item-icon">☕</span>
+            <span class="item-title">抵达麻黄梁，午后休整</span>
+            <span class="item-tag tag-rest">休整</span>
+          </div>
+          <div class="item-meta">
+            <span class="meta-chip"><span class="chip-icon">☀️</span> 正午光线较硬</span>
+          </div>
+          <div class="item-tip">此时光线较硬，不适合拍照。可在游客中心或车内休息，等待黄金时段。</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot dot-play"></div>
+        <div class="item-card play">
+          <div class="item-header">
+            <span class="item-time">15:30 - 18:30</span>
+            <span class="item-icon">🌄</span>
+            <span class="item-title">麻黄梁看日落 ⭐ 核心亮点</span>
+            <span class="item-tag tag-play">游玩</span>
+          </div>
+          <div class="item-meta">
+            <span class="meta-chip"><span class="chip-icon">⏱️</span> 游玩 3 小时</span>
+            <span class="meta-chip"><span class="chip-icon">📸</span> 极致出片</span>
+          </div>
+          <div class="item-tip">全程最美时刻！等待夕阳洒在千沟万壑的黄土地上，金色光芒震撼人心，非常出片！</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot dot-drive"></div>
+        <div class="item-card drive">
+          <div class="item-header">
+            <span class="item-time">18:30</span>
+            <span class="item-icon">🌃</span>
+            <span class="item-title">返程榆林市区</span>
+            <span class="item-tag tag-drive">自驾</span>
+          </div>
+          <div class="item-meta">
+            <span class="meta-chip"><span class="chip-icon">⏱️</span> 约 1.5 小时</span>
+            <span class="meta-chip"><span class="chip-icon">🌙</span> 夜色行车注意安全</span>
+          </div>
+          <div class="item-tip">夜色行车，注意安全，保持车距，不要疲劳驾驶。</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot dot-stay"></div>
+        <div class="item-card stay">
+          <div class="item-header">
+            <span class="item-time">20:00</span>
+            <span class="item-icon">🏨</span>
+            <span class="item-title">抵达榆林，入住夫子庙星程酒店</span>
+            <span class="item-tag tag-stay">住宿</span>
+          </div>
+          <div class="item-meta">
+            <span class="meta-chip"><span class="chip-icon">📍</span> 夫子庙步行街旁</span>
+          </div>
+          <div class="item-tip">楼下就是步行街，方便宵夜，安顿后可出门逛逛。</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot dot-play"></div>
+        <div class="item-card play">
+          <div class="item-header">
+            <span class="item-time">20:30</span>
+            <span class="item-icon">🚶</span>
+            <span class="item-title">夜游榆林古城</span>
+            <span class="item-tag tag-play">夜游</span>
+          </div>
+          <div class="item-meta">
+            <span class="meta-chip"><span class="chip-icon">📍</span> 六楼骑街 · 夫子庙</span>
+          </div>
+          <div class="item-tip">逛榆林老街（六楼骑街）和夫子庙，感受塞上古城的历史韵味。</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="day-divider"><span>🌙 晚安榆林 · 最后一天 🌙</span></div>
+
+  <!-- ===== DAY 3 ===== -->
+  <div class="day-card day3 fade-in" id="day3">
+    <div class="day-header">
+      <div class="day-badge">
+        <span class="day-num">D3</span>
+        <span class="day-text">第三天</span>
+      </div>
+      <div class="day-title-block">
+        <h2>榆林怀古 → 美食收官 → 返程西安</h2>
+        <span class="day-route-tag">🏯 镇北台 · 🪨 红石峡 · 🥘 榆林美食 · 🚂 高铁返程</span>
+      </div>
+    </div>
+
+    <div class="timeline">
+
+      <div class="timeline-item">
+        <div class="timeline-dot dot-drive"></div>
+        <div class="item-card drive">
+          <div class="item-header">
+            <span class="item-time">10:00</span>
+            <span class="item-icon">🚗</span>
+            <span class="item-title">驾车前往榆林汽车北站还车</span>
+            <span class="item-tag tag-drive">还车</span>
+          </div>
+          <div class="item-meta">
+            <span class="meta-chip"><span class="chip-icon">⏱️</span> 约 15 分钟</span>
+            <span class="meta-chip"><span class="chip-icon">⚠️</span> 检查有无违章</span>
+          </div>
+          <div class="item-tip">预留充足时间办理还车手续，检查有无违章记录，避免后续麻烦。</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot dot-transit"></div>
+        <div class="item-card transit">
+          <div class="item-header">
+            <span class="item-time">10:30</span>
+            <span class="item-icon">🚕</span>
+            <span class="item-title">打车前往镇北台 & 红石峡</span>
+            <span class="item-tag tag-transit">打车</span>
+          </div>
+          <div class="item-meta">
+            <span class="meta-chip"><span class="chip-icon">⏱️</span> 约 15 分钟</span>
+            <span class="meta-chip"><span class="chip-icon">📍</span> 两景点紧邻</span>
+          </div>
+          <div class="item-tip">两景点紧邻，建议一同游览，打车一次搞定。</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot dot-play"></div>
+        <div class="item-card play">
+          <div class="item-header">
+            <span class="item-time">10:30 - 12:00</span>
+            <span class="item-icon">🏯</span>
+            <span class="item-title">游览镇北台 & 红石峡</span>
+            <span class="item-tag tag-play">游玩</span>
+          </div>
+          <div class="item-meta">
+            <span class="meta-chip"><span class="chip-icon">⏱️</span> 游玩 1.5 小时</span>
+            <span class="meta-chip"><span class="chip-icon">🏔️</span> 登高望远</span>
+          </div>
+          <div class="item-tip">镇北台登高望远，俯瞰塞外风光；红石峡看石窟书法，感受历史厚重感。</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot dot-transit"></div>
+        <div class="item-card transit">
+          <div class="item-header">
+            <span class="item-time">12:00</span>
+            <span class="item-icon">🚕</span>
+            <span class="item-title">返回酒店附近，收拾行李</span>
+            <span class="item-tag tag-transit">返回</span>
+          </div>
+          <div class="item-meta">
+            <span class="meta-chip"><span class="chip-icon">🧳</span> 整理行李</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot dot-eat"></div>
+        <div class="item-card eat">
+          <div class="item-header">
+            <span class="item-time">12:30 - 14:00</span>
+            <span class="item-icon">🥘</span>
+            <span class="item-title">榆林美食收官大餐</span>
+            <span class="item-tag tag-eat">美食</span>
+          </div>
+          <div class="item-meta">
+            <span class="meta-chip"><span class="chip-icon">⏱️</span> 用餐 1.5 小时</span>
+            <span class="meta-chip"><span class="chip-icon">😋</span> 必吃清单</span>
+          </div>
+          <div class="item-tip">必吃：榆林拼三鲜、羊肉面、大烩菜，吃饱喝足再踏上归途！</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot dot-rest"></div>
+        <div class="item-card rest">
+          <div class="item-header">
+            <span class="item-time">14:00</span>
+            <span class="item-icon">🛋️</span>
+            <span class="item-title">酒店退房，休整待发</span>
+            <span class="item-tag tag-rest">休整</span>
+          </div>
+          <div class="item-meta">
+            <span class="meta-chip"><span class="chip-icon">🧳</span> 整理行李准备返程</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot dot-transit"></div>
+        <div class="item-card transit">
+          <div class="item-header">
+            <span class="item-time">16:30</span>
+            <span class="item-icon">🚂</span>
+            <span class="item-title">榆林站乘 D179 次高铁返程</span>
+            <span class="item-tag tag-transit">高铁</span>
+          </div>
+          <div class="item-meta">
+            <span class="meta-chip"><span class="chip-icon">⏱️</span> 车程约 4.5 小时</span>
+            <span class="meta-chip"><span class="chip-icon">📍</span> 榆林站 → 西安北站</span>
+          </div>
+          <div class="item-tip">建议提前半小时进站安检，在车上回味这三天的精彩旅程。</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot dot-stay"></div>
+        <div class="item-card stay">
+          <div class="item-header">
+            <span class="item-time">20:37</span>
+            <span class="item-icon">🏁</span>
+            <span class="item-title">抵达西安北站，圆满收官！</span>
+            <span class="item-tag tag-stay">终点</span>
+          </div>
+          <div class="item-meta">
+            <span class="meta-chip"><span class="chip-icon">🎉</span> 晋陕三日之旅圆满结束</span>
+          </div>
+          <div class="item-tip">带着满满的回忆和照片，平安到家！🚗💨</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== Checklist ===== -->
+  <div class="checklist-card fade-in">
+    <div class="section-title">📋 行前 Checklist</div>
+    <div class="checklist-items">
+      <div class="checklist-item">
+        <div class="ci-title">🪪 证件</div>
+        <div class="ci-desc">身份证必带！租车、高铁、住宿全靠它，出发前反复确认。</div>
+      </div>
+      <div class="checklist-item">
+        <div class="ci-title">☀️ 防晒防风</div>
+        <div class="ci-desc">陕北紫外线极强，备防晒霜/帽子/墨镜；壶口水雾大备手机防水袋；麻黄梁风大带薄外套。</div>
+      </div>
+      <div class="checklist-item">
+        <div class="ci-title">🚗 安全驾驶</div>
+        <div class="ci-desc">波浪谷和麻黄梁多盘山路，注意刹车热衰减，切勿超速，注意区间测速。</div>
+      </div>
+      <div class="checklist-item">
+        <div class="ci-title">🎟️ 提前预约</div>
+        <div class="ci-desc">壶口瀑布、波浪谷建议提前在官方公众号/OTA平台预约购票，节省现场排队时间。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 图例 ===== -->
+  <div class="route-overview fade-in" style="margin-bottom: 20px;">
+    <div class="section-title">🏷️ 图例说明</div>
+    <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 10px;">
+      <span style="display:flex;align-items:center;gap:6px;font-size:0.85em;"><span style="width:12px;height:12px;border-radius:50%;background:#3498DB;display:inline-block;"></span>自驾/交通</span>
+      <span style="display:flex;align-items:center;gap:6px;font-size:0.85em;"><span style="width:12px;height:12px;border-radius:50%;background:#E74C3C;display:inline-block;"></span>美食</span>
+      <span style="display:flex;align-items:center;gap:6px;font-size:0.85em;"><span style="width:12px;height:12px;border-radius:50%;background:#27AE60;display:inline-block;"></span>游玩景点</span>
+      <span style="display:flex;align-items:center;gap:6px;font-size:0.85em;"><span style="width:12px;height:12px;border-radius:50%;background:#9B59B6;display:inline-block;"></span>住宿/终点</span>
+      <span style="display:flex;align-items:center;gap:6px;font-size:0.85em;"><span style="width:12px;height:12px;border-radius:50%;background:#F39C12;display:inline-block;"></span>高铁/打车</span>
+      <span style="display:flex;align-items:center;gap:6px;font-size:0.85em;"><span style="width:12px;height:12px;border-radius:50%;background:#95A5A6;display:inline-block;"></span>休整</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== 页脚 ===== -->
+<div class="footer">
+  <div class="footer-emoji">🚗 🌊 🏜️ 🏯 🎉</div>
+  <p>晋陕三日路书 · 祝旅途愉快，一路平安！</p>
+  <p style="margin-top: 6px; font-size: 0.8em;">西安 → 临汾 → 壶口 → 延安 → 靖边 → 麻黄梁 → 榆林 → 西安</p>
+</div>
+
+<script>
+  // 滚动淡入动画
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+  // 导航点击平滑滚动
+  document.querySelectorAll('.nav-item').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+      e.preventDefault();
+      const targetId = this.getAttribute('href');
+      const targetElement = document.querySelector(targetId);
+      if (targetElement) {
+        targetElement.scrollIntoView({
+          behavior: 'smooth'
+        });
+      }
+    });
+  });
+
+  // 滚动时更新导航激活状态及显示隐藏
+  const sections = document.querySelectorAll('.day-card');
+  const navItems = document.querySelectorAll('.nav-item');
+  const floatingNav = document.getElementById('floatingNav');
+  const cover = document.querySelector('.cover');
+  
+  window.addEventListener('scroll', () => {
+    // 控制导航栏显示隐藏（滑过封面后显示）
+    if (window.pageYOffset > cover.offsetHeight - 100) {
+      floatingNav.classList.add('visible');
+    } else {
+      floatingNav.classList.remove('visible');
+    }
+
+    // 更新激活状态
+    let current = '';
+    sections.forEach(section => {
+      const sectionTop = section.offsetTop;
+      if (window.pageYOffset >= sectionTop - 150) {
+        current = section.getAttribute('id');
+      }
+    });
+
+    navItems.forEach(item => {
+      item.classList.remove('active');
+      if (item.getAttribute('href') === `#${current}`) {
+        item.classList.add('active');
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
