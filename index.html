@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>日程看板</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 看板数据配置文件（与本页面解耦，便于独立维护） -->
+    <script src="./schedule-data.js"></script>
     <style>
         body {
             background-color: #f3f4f6;
@@ -81,6 +83,27 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+        /* 子日程项缩进展示 */
+        .sub-task-item {
+            margin-left: 12px;
+            border-left: 2px dashed currentColor;
+            padding-left: 8px;
+            opacity: 0.85;
+            font-size: 0.85em;
+        }
+        /* 编辑模式下日程卡片悬浮工具按钮 */
+        .task-card .edit-actions {
+            display: none;
+        }
+        body.edit-mode .task-card .edit-actions {
+            display: flex;
+        }
+        body.edit-mode .task-card {
+            cursor: pointer;
+        }
+        body.edit-mode .task-card:hover {
+            outline: 2px dashed #6366f1;
+        }
     </style>
 </head>
 <body class="p-3 sm:p-6">
@@ -103,6 +126,12 @@
         <!-- Countdown -->
         <div id="next-task-countdown" class="mb-4 text-sm sm:text-lg font-bold text-red-600 hidden bg-red-50 inline-block px-3 sm:px-6 py-2 rounded-full border border-red-200 shadow-sm max-w-full break-words">
             ⏱️ 距离下一教学任务 (<span id="next-task-name"></span>) 还有: <span id="countdown-timer"></span>
+        </div>
+
+        <!-- 编辑工具栏 -->
+        <div class="flex flex-wrap justify-center gap-2 mb-3">
+            <button id="btn-toggle-edit" onclick="toggleEditMode()" class="px-3 sm:px-4 py-1.5 bg-amber-500 text-white rounded hover:bg-amber-600 active:bg-amber-700 font-medium transition-colors text-sm shadow-sm">✏️ 进入编辑模式</button>
+            <button id="btn-reset-data" onclick="resetScheduleData()" class="px-3 sm:px-4 py-1.5 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 active:bg-gray-400 font-medium transition-colors text-sm shadow-sm">🔄 恢复默认</button>
         </div>
 
         <!-- View Controls: 日期筛选行 -->
@@ -143,6 +172,68 @@
     </div>
 </div>
 
+<!-- 日程编辑模态框 -->
+<div id="edit-modal" class="fixed inset-0 bg-gray-900 bg-opacity-60 hidden items-center justify-center z-50 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg my-auto">
+        <div class="flex items-center justify-between border-b border-gray-200 p-4">
+            <h3 class="text-lg font-bold text-gray-800" id="edit-modal-title">新建日程</h3>
+            <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+        </div>
+        <div class="p-4 space-y-3 max-h-[70vh] overflow-y-auto">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">所属日期 <span class="text-red-500">*</span></label>
+                <select id="edit-day" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <option value="周一">周一</option>
+                    <option value="周二">周二</option>
+                    <option value="周三">周三</option>
+                    <option value="周四">周四</option>
+                    <option value="周五">周五</option>
+                </select>
+            </div>
+            <div class="flex gap-2">
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">开始时间 <span class="text-red-500">*</span></label>
+                    <input type="time" id="edit-start" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">结束时间 <span class="text-red-500">*</span></label>
+                    <input type="time" id="edit-end" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">日程标题 <span class="text-red-500">*</span></label>
+                <input type="text" id="edit-title" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="如：📝 作业批改">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">类型 <span class="text-red-500">*</span></label>
+                <select id="edit-type" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <option value="teaching">教学占用 (不可排期)</option>
+                    <option value="planned">规划任务 (教案/批改)</option>
+                    <option value="free">空闲/机动 (可休息)</option>
+                </select>
+            </div>
+
+            <!-- 子日程编辑（仅父日程展示） -->
+            <div id="sub-tasks-section">
+                <div class="flex items-center justify-between mb-2">
+                    <label class="text-sm font-medium text-gray-700">子日程项目</label>
+                    <button type="button" onclick="addSubTaskInput()" class="text-xs px-2 py-1 bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200">+ 添加子日程</button>
+                </div>
+                <div id="sub-tasks-list" class="space-y-2"></div>
+            </div>
+
+            <p id="edit-error" class="text-red-500 text-sm hidden"></p>
+        </div>
+        <div class="flex justify-between items-center border-t border-gray-200 p-4 gap-2">
+            <button id="edit-delete-btn" onclick="deleteCurrentTask()" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors hidden">删除</button>
+            <div class="flex gap-2 ml-auto">
+                <button onclick="closeEditModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">取消</button>
+                <button onclick="saveTaskEdit()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Sidebar (Pomodoro) -->
 <div id="sidebar" class="fixed right-0 top-1/4 w-60 sm:w-64 max-w-[80vw] bg-white shadow-2xl rounded-l-2xl p-4 sm:p-5 border border-gray-200 z-40 transform transition-transform duration-300 translate-x-full">
     <button id="sidebar-toggle" onclick="toggleSidebar()" class="absolute -left-10 top-1/2 transform -translate-y-1/2 bg-white w-10 h-12 flex items-center justify-center rounded-l-lg shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),-4px_0_6px_-1px_rgba(0,0,0,0.1)] border border-r-0 border-gray-200 text-gray-600 hover:text-indigo-600 focus:outline-none touch-manipulation">
@@ -174,99 +265,75 @@
 </div>
 
 <script>
-    const scheduleData = {
-        "周一": [
-            { time: "08:00 - 09:00", duration: "60'", title: "📝 作业批改", type: "planned" },
-            { time: "09:00 - 09:35", duration: "35'", title: "🏃 早操大课间", type: "teaching" },
-            { time: "09:35 - 10:15", duration: "40'", title: "📖 语文", type: "teaching" },
-            { time: "10:15 - 10:30", duration: "15'", title: "☕ 课间休息", type: "free" },
-            { time: "10:30 - 10:35", duration: "5'", title: "👀 眼保健操", type: "teaching" },
-            { time: "10:35 - 11:05", duration: "30'", title: "📝 作业批改", type: "planned" },
-            { time: "11:05 - 11:25", duration: "20'", title: "🍃 自由机动", type: "free" },
-            { time: "11:25 - 12:00", duration: "35'", title: "📖 语文", type: "teaching" },
-            { time: "12:00 - 14:00", duration: "120'", title: "🍱 午休及午餐", type: "free" },
-            { time: "14:00 - 15:05", duration: "65'", title: "📚 教案书写", type: "planned" },
-            { time: "15:05 - 15:10", duration: "5'", title: "👀 眼保健操", type: "teaching" },
-            { time: "15:10 - 15:45", duration: "35'", title: "🍃 自由机动", type: "free" },
-            { time: "15:45 - 16:20", duration: "35'", title: "🏃 下午大课间", type: "teaching" },
-            { time: "16:20 - 16:25", duration: "5'", title: "🎒 放学", type: "free" },
-            { time: "16:25 - 17:05", duration: "40'", title: "辅 课后作业辅导", type: "teaching" },
-            { time: "17:05 - 18:00", duration: "55'", title: "📚 教案书写", type: "planned" }
-        ],
-        "周二": [
-            { time: "08:00 - 08:20", duration: "20'", title: "🍃 上班前空档", type: "free" },
-            { time: "08:20 - 09:00", duration: "40'", title: "📖 语文", type: "teaching" },
-            { time: "09:00 - 09:35", duration: "35'", title: "🏃 早操大课间", type: "teaching" },
-            { time: "09:35 - 10:30", duration: "55'", title: "📝 作业批改", type: "planned" },
-            { time: "10:30 - 10:35", duration: "5'", title: "👀 眼保健操", type: "teaching" },
-            { time: "10:35 - 12:00", duration: "85'", title: "📚 教案书写", type: "planned" },
-            { time: "12:00 - 14:00", duration: "120'", title: "🍱 午休及午餐", type: "free" },
-            { time: "14:00 - 14:15", duration: "15'", title: "🍃 课前准备+广播", type: "free" },
-            { time: "14:15 - 14:50", duration: "35'", title: "📖 阅读/少队课", type: "teaching" },
-            { time: "14:50 - 15:05", duration: "15'", title: "☕ 课间休息", type: "free" },
-            { time: "15:05 - 15:10", duration: "5'", title: "👀 眼保健操", type: "teaching" },
-            { time: "15:10 - 15:45", duration: "35'", title: "📝 作业批改", type: "planned" },
-            { time: "15:45 - 16:20", duration: "35'", title: "🏃 下午大课间", type: "teaching" },
-            { time: "16:20 - 16:25", duration: "5'", title: "🎒 放学", type: "free" },
-            { time: "16:25 - 17:00", duration: "35'", title: "📚 教案书写", type: "planned" },
-            { time: "17:00 - 17:20", duration: "20'", title: "🍃 自由机动", type: "free" },
-            { time: "17:20 - 18:00", duration: "40'", title: "🎨 课后兴趣拓展", type: "teaching" }
-        ],
-        "周三": [
-            { time: "08:00 - 09:00", duration: "60'", title: "📝 作业批改", type: "planned" },
-            { time: "09:00 - 09:35", duration: "35'", title: "🏃 早操大课间", type: "teaching" },
-            { time: "09:35 - 10:15", duration: "40'", title: "📖 语文", type: "teaching" },
-            { time: "10:15 - 10:30", duration: "15'", title: "☕ 课间休息", type: "free" },
-            { time: "10:30 - 10:35", duration: "5'", title: "👀 眼保健操", type: "teaching" },
-            { time: "10:35 - 11:10", duration: "35'", title: "🧹 劳动", type: "teaching" },
-            { time: "11:10 - 11:40", duration: "30'", title: "📝 作业批改", type: "planned" },
-            { time: "11:40 - 12:00", duration: "20'", title: "🍃 自由机动", type: "free" },
-            { time: "12:00 - 14:00", duration: "120'", title: "🍱 午休及午餐", type: "free" },
-            { time: "14:00 - 15:05", duration: "65'", title: "📚 教案书写", type: "planned" },
-            { time: "15:05 - 15:10", duration: "5'", title: "👀 眼保健操", type: "teaching" },
-            { time: "15:10 - 15:45", duration: "35'", title: "🍃 自由机动", type: "free" },
-            { time: "15:45 - 16:20", duration: "35'", title: "🏃 下午大课间", type: "teaching" },
-            { time: "16:20 - 16:25", duration: "5'", title: "🎒 放学", type: "free" },
-            { time: "16:25 - 17:05", duration: "40'", title: "辅 课后作业辅导", type: "teaching" },
-            { time: "17:05 - 18:00", duration: "55'", title: "📚 教案书写", type: "planned" }
-        ],
-        "周四": [
-            { time: "08:00 - 08:20", duration: "20'", title: "🍃 上班前空档", type: "free" },
-            { time: "08:20 - 09:00", duration: "40'", title: "📖 语文", type: "teaching" },
-            { time: "09:00 - 09:35", duration: "35'", title: "🏃 早操大课间", type: "teaching" },
-            { time: "09:35 - 10:30", duration: "55'", title: "📝 作业批改", type: "planned" },
-            { time: "10:30 - 10:35", duration: "5'", title: "👀 眼保健操", type: "teaching" },
-            { time: "10:35 - 12:00", duration: "85'", title: "📚 教案书写", type: "planned" },
-            { time: "12:00 - 14:00", duration: "120'", title: "🍱 午休及午餐", type: "free" },
-            { time: "14:00 - 14:35", duration: "35'", title: "📚 教案书写", type: "planned" },
-            { time: "14:35 - 15:05", duration: "30'", title: "🍃 自由机动", type: "free" },
-            { time: "15:05 - 15:10", duration: "5'", title: "👀 眼保健操", type: "teaching" },
-            { time: "15:10 - 15:45", duration: "35'", title: "✍️ 书法", type: "teaching" },
-            { time: "15:45 - 16:20", duration: "35'", title: "🏃 下午大课间", type: "teaching" },
-            { time: "16:20 - 16:25", duration: "5'", title: "🎒 放学", type: "free" },
-            { time: "16:25 - 17:00", duration: "35'", title: "📝 作业批改", type: "planned" },
-            { time: "17:00 - 17:20", duration: "20'", title: "🍃 自由机动", type: "free" },
-            { time: "17:20 - 18:00", duration: "40'", title: "🎨 课后兴趣拓展", type: "teaching" }
-        ],
-        "周五": [
-            { time: "08:00 - 09:00", duration: "60'", title: "📝 作业批改", type: "planned" },
-            { time: "09:00 - 09:35", duration: "35'", title: "🏃 早操大课间", type: "teaching" },
-            { time: "09:35 - 10:15", duration: "40'", title: "📖 语文", type: "teaching" },
-            { time: "10:15 - 10:30", duration: "15'", title: "☕ 课间休息", type: "free" },
-            { time: "10:30 - 10:35", duration: "5'", title: "👀 眼保健操", type: "teaching" },
-            { time: "10:35 - 12:00", duration: "85'", title: "📚 教案书写", type: "planned" },
-            { time: "12:00 - 14:00", duration: "120'", title: "🍱 午休及午餐", type: "free" },
-            { time: "14:00 - 15:05", duration: "65'", title: "🍃 自由机动", type: "free" },
-            { time: "15:05 - 15:10", duration: "5'", title: "👀 眼保健操", type: "teaching" },
-            { time: "15:10 - 15:40", duration: "30'", title: "📝 作业批改", type: "planned" },
-            { time: "15:40 - 15:45", duration: "5'", title: "🍃 自由机动", type: "free" },
-            { time: "15:45 - 16:20", duration: "35'", title: "🏃 下午大课间", type: "teaching" },
-            { time: "16:20 - 16:25", duration: "5'", title: "🎒 放学", type: "free" },
-            { time: "16:25 - 17:05", duration: "40'", title: "辅 课后作业辅导", type: "teaching" },
-            { time: "17:05 - 17:40", duration: "35'", title: "📚 教案书写", type: "planned" },
-            { time: "17:40 - 18:00", duration: "20'", title: "🍃 自由机动", type: "free" }
-        ]
-    };
+    // 看板数据来源：优先从 localStorage 读取用户编辑后的版本，否则使用外部 schedule-data.js 提供的默认数据
+
+    // ===== 数据存储与加载 =====
+    const STORAGE_KEY = 'schedule_kanban_data_v2';
+    // 当前生效的看板数据
+    let scheduleData = loadScheduleData();
+
+    function loadScheduleData() {
+        try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                return JSON.parse(saved);
+            }
+        } catch (e) { console.warn('读取本地日程数据失败，使用默认数据', e); }
+        return JSON.parse(JSON.stringify(window.DEFAULT_SCHEDULE_DATA || {}));
+    }
+
+    function saveScheduleData() {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(scheduleData));
+        } catch (e) { console.warn('保存日程数据失败', e); }
+    }
+
+    function resetScheduleData() {
+        if (!confirm('确定要恢复默认日程数据吗？所有自定义修改将丢失！')) return;
+        localStorage.removeItem(STORAGE_KEY);
+        scheduleData = JSON.parse(JSON.stringify(window.DEFAULT_SCHEDULE_DATA || {}));
+        rerenderBoard();
+    }
+
+    // ===== 工具函数 =====
+    function timeToMinutes(t) {
+        if (!t) return 0;
+        const [h, m] = t.split(':').map(Number);
+        return h * 60 + (m || 0);
+    }
+    function calcDuration(start, end) {
+        const diff = timeToMinutes(end) - timeToMinutes(start);
+        return diff > 0 ? `${diff}'` : '';
+    }
+    function generateId() {
+        return 'task-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+    }
+
+    /**
+     * 校验时间段冲突：检查 [start,end) 是否与 day 下其他日程时间段重叠
+     * @param {string} day 周几
+     * @param {string} start "HH:MM"
+     * @param {string} end   "HH:MM"
+     * @param {string|null} excludeId 编辑时排除自身id
+     * @returns {string|null} 冲突时返回错误消息，无冲突返回 null
+     */
+    function validateTimeConflict(day, start, end, excludeId) {
+        const sMin = timeToMinutes(start);
+        const eMin = timeToMinutes(end);
+        if (eMin <= sMin) return '结束时间必须晚于开始时间';
+        const tasks = scheduleData[day] || [];
+        for (const t of tasks) {
+            if (excludeId && t.id === excludeId) continue;
+            const [ts, te] = t.time.split(' - ');
+            const tsMin = timeToMinutes(ts);
+            const teMin = timeToMinutes(te);
+            // 区间重叠判断：sMin < teMin && eMin > tsMin
+            if (sMin < teMin && eMin > tsMin) {
+                return `时间冲突：与已有日程「${t.title}」(${t.time}) 时间段重叠`;
+            }
+        }
+        return null;
+    }
 
     function checkPassword() {
         const input = document.getElementById('pwd-input').value;
@@ -580,42 +647,313 @@
         }
     }
 
-    const board = document.getElementById('kanban-board');
+    // ===== 看板渲染 =====
+    function escapeHtml(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
 
-    Object.entries(scheduleData).forEach(([day, tasks]) => {
-        // Create column
-        const col = document.createElement('div');
-        col.id = `col-${day}`;
-        col.className = 'kanban-col-container bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-[70vh] sm:h-[80vh] transition-all duration-300';
+    function renderBoard() {
+        const board = document.getElementById('kanban-board');
+        if (!board) return;
+        board.innerHTML = '';
 
-        // Column Header
-        const header = document.createElement('div');
-        header.className = 'p-4 border-b border-gray-100 bg-gray-50 rounded-t-xl';
-        header.innerHTML = `<h2 class="text-lg font-bold text-gray-800 text-center">${day}</h2>`;
-        col.appendChild(header);
-
-        // Column Body (Scrollable)
-        const body = document.createElement('div');
-        body.className = 'p-3 flex-1 overflow-y-auto kanban-col space-y-3';
-
-        tasks.forEach((task, index) => {
-            const card = document.createElement('div');
-            card.id = `task-${day}-${index}`;
-            card.className = `task-card p-3 rounded-lg shadow-sm text-sm transition-all duration-300 hover:scale-[1.02] cursor-default card-${task.type}`;
-
-            card.innerHTML = `
-                    <div class="flex justify-between items-start mb-1">
-                        <span class="font-semibold text-xs opacity-80">${task.time}</span>
-                        <span class="text-xs font-bold bg-white/50 px-1.5 py-0.5 rounded">${task.duration}</span>
-                    </div>
-                    <div class="font-bold text-base mt-1 task-title">${task.title}</div>
-                `;
-            body.appendChild(card);
+        // 按时间排序，保证编辑后顺序正确
+        Object.entries(scheduleData).forEach(([day, tasks]) => {
+            tasks.sort((a, b) => timeToMinutes(a.time.split(' - ')[0]) - timeToMinutes(b.time.split(' - ')[0]));
         });
 
-        col.appendChild(body);
-        board.appendChild(col);
-    });
+        Object.entries(scheduleData).forEach(([day, tasks]) => {
+            const col = document.createElement('div');
+            col.id = `col-${day}`;
+            col.className = 'kanban-col-container bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-[70vh] sm:h-[80vh] transition-all duration-300';
+
+            const header = document.createElement('div');
+            header.className = 'p-4 border-b border-gray-100 bg-gray-50 rounded-t-xl flex items-center justify-between';
+            header.innerHTML = `
+                <h2 class="text-lg font-bold text-gray-800">${day}</h2>
+                <button class="add-task-btn hidden text-xs px-2 py-1 bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200" data-day="${day}">+ 新增</button>
+            `;
+            col.appendChild(header);
+
+            const body = document.createElement('div');
+            body.className = 'p-3 flex-1 overflow-y-auto kanban-col space-y-3';
+
+            tasks.forEach((task, index) => {
+                if (!task.id) task.id = generateId();
+                const card = document.createElement('div');
+                card.id = `task-${day}-${index}`;
+                card.dataset.taskId = task.id;
+                card.dataset.day = day;
+                card.className = `task-card p-3 rounded-lg shadow-sm text-sm transition-all duration-300 cursor-default card-${task.type} relative`;
+
+                let subTasksHtml = '';
+                if (Array.isArray(task.subTasks) && task.subTasks.length > 0) {
+                    subTasksHtml = '<div class="mt-2 space-y-1">' +
+                        task.subTasks.map(st => `
+                            <div class="sub-task-item">
+                                <div class="flex justify-between items-center">
+                                    <span class="font-semibold text-xs opacity-80">${escapeHtml(st.time)}</span>
+                                    <span class="text-xs opacity-70">${escapeHtml(st.duration || '')}</span>
+                                </div>
+                                <div class="font-medium">${escapeHtml(st.title)}</div>
+                            </div>
+                        `).join('') + '</div>';
+                }
+
+                card.innerHTML = `
+                    <div class="edit-actions absolute top-1 right-1 gap-1">
+                        <button class="task-edit-btn text-xs bg-white/90 hover:bg-white text-indigo-700 px-1.5 py-0.5 rounded shadow">编辑</button>
+                        <button class="task-delete-btn text-xs bg-white/90 hover:bg-white text-red-600 px-1.5 py-0.5 rounded shadow">删除</button>
+                    </div>
+                    <div class="flex justify-between items-start mb-1">
+                        <span class="font-semibold text-xs opacity-80">${escapeHtml(task.time)}</span>
+                        <span class="text-xs font-bold bg-white/50 px-1.5 py-0.5 rounded">${escapeHtml(task.duration)}</span>
+                    </div>
+                    <div class="font-bold text-base mt-1 task-title">${escapeHtml(task.title)}</div>
+                    ${subTasksHtml}
+                `;
+                body.appendChild(card);
+            });
+
+            col.appendChild(body);
+            board.appendChild(col);
+        });
+
+        // 绑定编辑/删除按钮
+        bindEditEvents();
+
+        // 切换编辑模式时同步显示新增按钮
+        document.querySelectorAll('.add-task-btn').forEach(btn => {
+            btn.classList.toggle('hidden', !document.body.classList.contains('edit-mode'));
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openEditModal(null, btn.dataset.day);
+            });
+        });
+    }
+
+    function bindEditEvents() {
+        document.querySelectorAll('.task-edit-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const card = btn.closest('.task-card');
+                openEditModal(card.dataset.taskId, card.dataset.day);
+            });
+        });
+        document.querySelectorAll('.task-delete-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const card = btn.closest('.task-card');
+                if (confirm('确定要删除该日程吗？')) {
+                    deleteTaskById(card.dataset.day, card.dataset.taskId);
+                }
+            });
+        });
+    }
+
+    /** 重新渲染并应用所有筛选/高亮 */
+    function rerenderBoard() {
+        renderBoard();
+        if (typeof updateBoardView === 'function') updateBoardView();
+        if (typeof updateTaskVisibility === 'function') updateTaskVisibility();
+        if (typeof updateHighlight === 'function') updateHighlight();
+    }
+
+    // ===== 编辑模式 =====
+    function toggleEditMode() {
+        document.body.classList.toggle('edit-mode');
+        const isEditing = document.body.classList.contains('edit-mode');
+        document.getElementById('btn-toggle-edit').textContent = isEditing ? '✅ 退出编辑模式' : '✏️ 进入编辑模式';
+        document.querySelectorAll('.add-task-btn').forEach(btn => btn.classList.toggle('hidden', !isEditing));
+    }
+
+    // ===== 日程编辑模态框 =====
+    let editingContext = { day: null, taskId: null }; // taskId 为 null 表示新建
+
+    function openEditModal(taskId, day) {
+        editingContext = { day: day || '周一', taskId: taskId || null };
+        const modal = document.getElementById('edit-modal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.getElementById('edit-error').classList.add('hidden');
+
+        const subListEl = document.getElementById('sub-tasks-list');
+        subListEl.innerHTML = '';
+
+        if (taskId) {
+            // 编辑模式
+            document.getElementById('edit-modal-title').textContent = '编辑日程';
+            document.getElementById('edit-delete-btn').classList.remove('hidden');
+            const task = (scheduleData[day] || []).find(t => t.id === taskId);
+            if (task) {
+                const [s, e] = task.time.split(' - ');
+                document.getElementById('edit-day').value = day;
+                document.getElementById('edit-start').value = s;
+                document.getElementById('edit-end').value = e;
+                document.getElementById('edit-title').value = task.title;
+                document.getElementById('edit-type').value = task.type;
+                (task.subTasks || []).forEach(st => addSubTaskInput(st));
+            }
+        } else {
+            // 新建模式
+            document.getElementById('edit-modal-title').textContent = '新建日程';
+            document.getElementById('edit-delete-btn').classList.add('hidden');
+            document.getElementById('edit-day').value = day || '周一';
+            document.getElementById('edit-start').value = '';
+            document.getElementById('edit-end').value = '';
+            document.getElementById('edit-title').value = '';
+            document.getElementById('edit-type').value = 'planned';
+        }
+    }
+
+    function closeEditModal() {
+        const modal = document.getElementById('edit-modal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+
+    function addSubTaskInput(preset) {
+        const list = document.getElementById('sub-tasks-list');
+        const row = document.createElement('div');
+        row.className = 'sub-task-row flex flex-wrap gap-1 items-center bg-gray-50 p-2 rounded';
+        const [ps, pe] = (preset && preset.time) ? preset.time.split(' - ') : ['', ''];
+        row.innerHTML = `
+            <input type="time" class="sub-start border rounded px-1 py-1 text-sm" value="${ps}">
+            <span class="text-gray-400">-</span>
+            <input type="time" class="sub-end border rounded px-1 py-1 text-sm" value="${pe}">
+            <input type="text" class="sub-title flex-1 min-w-[120px] border rounded px-2 py-1 text-sm" placeholder="子日程标题" value="${escapeHtml(preset && preset.title || '')}">
+            <select class="sub-type border rounded px-1 py-1 text-sm">
+                <option value="teaching" ${preset && preset.type === 'teaching' ? 'selected' : ''}>教学</option>
+                <option value="planned" ${preset && preset.type === 'planned' ? 'selected' : ''}>规划</option>
+                <option value="free" ${preset && preset.type === 'free' ? 'selected' : ''}>空闲</option>
+            </select>
+            <button type="button" class="text-red-500 hover:text-red-700 text-sm px-1" onclick="this.parentElement.remove()">×</button>
+        `;
+        list.appendChild(row);
+    }
+
+    function collectSubTasks() {
+        const rows = document.querySelectorAll('#sub-tasks-list .sub-task-row');
+        const result = [];
+        for (const row of rows) {
+            const s = row.querySelector('.sub-start').value;
+            const e = row.querySelector('.sub-end').value;
+            const t = row.querySelector('.sub-title').value.trim();
+            const ty = row.querySelector('.sub-type').value;
+            if (!s && !e && !t) continue; // 空行跳过
+            if (!s || !e || !t) {
+                throw new Error('子日程的开始时间、结束时间、标题均为必填项');
+            }
+            if (timeToMinutes(e) <= timeToMinutes(s)) {
+                throw new Error(`子日程「${t}」的结束时间必须晚于开始时间`);
+            }
+            result.push({
+                id: generateId(),
+                time: `${s} - ${e}`,
+                duration: calcDuration(s, e),
+                title: t,
+                type: ty
+            });
+        }
+        // 子日程之间不能时间冲突
+        for (let i = 0; i < result.length; i++) {
+            for (let j = i + 1; j < result.length; j++) {
+                const ai = timeToMinutes(result[i].time.split(' - ')[0]);
+                const ae = timeToMinutes(result[i].time.split(' - ')[1]);
+                const bi = timeToMinutes(result[j].time.split(' - ')[0]);
+                const be = timeToMinutes(result[j].time.split(' - ')[1]);
+                if (ai < be && ae > bi) {
+                    throw new Error(`子日程「${result[i].title}」与「${result[j].title}」时间段重叠`);
+                }
+            }
+        }
+        return result;
+    }
+
+    function showEditError(msg) {
+        const el = document.getElementById('edit-error');
+        el.textContent = msg;
+        el.classList.remove('hidden');
+    }
+
+    function saveTaskEdit() {
+        const day = document.getElementById('edit-day').value;
+        const start = document.getElementById('edit-start').value;
+        const end = document.getElementById('edit-end').value;
+        const title = document.getElementById('edit-title').value.trim();
+        const type = document.getElementById('edit-type').value;
+
+        if (!day || !start || !end || !title) {
+            showEditError('日期、开始时间、结束时间、标题均为必填项');
+            return;
+        }
+        const conflictMsg = validateTimeConflict(day, start, end, editingContext.taskId);
+        if (conflictMsg) {
+            showEditError(conflictMsg);
+            return;
+        }
+
+        let subTasks;
+        try {
+            subTasks = collectSubTasks();
+        } catch (err) {
+            showEditError(err.message);
+            return;
+        }
+
+        // 子日程时间应在父时间段内
+        const pStart = timeToMinutes(start);
+        const pEnd = timeToMinutes(end);
+        for (const st of subTasks) {
+            const [ss, se] = st.time.split(' - ');
+            if (timeToMinutes(ss) < pStart || timeToMinutes(se) > pEnd) {
+                showEditError(`子日程「${st.title}」(${st.time}) 必须在父日程时间段 (${start} - ${end}) 内`);
+                return;
+            }
+        }
+
+        const taskObj = {
+            id: editingContext.taskId || generateId(),
+            time: `${start} - ${end}`,
+            duration: calcDuration(start, end),
+            title: title,
+            type: type,
+            subTasks: subTasks
+        };
+
+        if (editingContext.taskId) {
+            // 编辑：先在原 day 中删除（可能跨日期修改），再插入到新 day
+            for (const d of Object.keys(scheduleData)) {
+                scheduleData[d] = (scheduleData[d] || []).filter(t => t.id !== editingContext.taskId);
+            }
+            scheduleData[day] = scheduleData[day] || [];
+            scheduleData[day].push(taskObj);
+        } else {
+            scheduleData[day] = scheduleData[day] || [];
+            scheduleData[day].push(taskObj);
+        }
+
+        saveScheduleData();
+        closeEditModal();
+        rerenderBoard();
+    }
+
+    function deleteCurrentTask() {
+        if (!editingContext.taskId) return;
+        if (!confirm('确定要删除该日程吗？')) return;
+        deleteTaskById(editingContext.day, editingContext.taskId);
+        closeEditModal();
+    }
+
+    function deleteTaskById(day, taskId) {
+        if (!scheduleData[day]) return;
+        scheduleData[day] = scheduleData[day].filter(t => t.id !== taskId);
+        saveScheduleData();
+        rerenderBoard();
+    }
+
+    // 初始渲染
+    renderBoard();
 </script>
 </body>
 </html>
