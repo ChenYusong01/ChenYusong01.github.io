@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>王老师日常教学安排 & 任务规划看板</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #f3f4f6;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        /* Custom scrollbar for kanban columns */
+        .kanban-col::-webkit-scrollbar {
+            width: 6px;
+        }
+        .kanban-col::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .kanban-col::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 10px;
+        }
+        .card-teaching {
+            background-color: #fee2e2;
+            border-left: 4px solid #ef4444;
+            color: #7f1d1d;
+        }
+        .card-planned {
+            background-color: #e0e7ff;
+            border-left: 4px solid #6366f1;
+            color: #312e81;
+        }
+        .card-free {
+            background-color: #dcfce3;
+            border-left: 4px solid #22c55e;
+            color: #14532d;
+        }
+        .highlight-col {
+            border: 2px solid #3b82f6 !important;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+        }
+        .highlight-task {
+            border: 2px solid #f59e0b !important;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+            transform: scale(1.02);
+            position: relative;
+            z-index: 10;
+        }
+        .highlight-task::after {
+            content: '进行中';
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background-color: #f59e0b;
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+            70% { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+        }
+    </style>
+</head>
+<body class="p-6">
+    <!-- Auth Modal -->
+    <div id="auth-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-96 text-center">
+            <h2 class="text-2xl font-bold mb-4 text-gray-800">访问受限</h2>
+            <p class="text-gray-600 mb-6">请输入查看密码以访问日程规划表</p>
+            <input type="password" id="pwd-input" class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="请输入密码" onkeypress="if(event.key === 'Enter') checkPassword()">
+            <p id="pwd-error" class="text-red-500 text-sm mb-4 hidden">密码错误，请重试</p>
+            <button onclick="checkPassword()" class="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium">确认</button>
+        </div>
+    </div>
+
+    <div id="main-content" class="max-w-7xl mx-auto hidden">
+        <!-- Header -->
+        <div class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-gray-800 mb-4">王老师日常教学安排 & 任务规划看板</h1>
+            <div class="flex justify-center gap-6 text-sm">
+                <div class="flex items-center gap-2">
+                    <div class="w-4 h-4 rounded bg-red-100 border-l-4 border-red-500"></div>
+                    <span class="text-gray-700 font-medium">教学占用 (不可排期)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-4 h-4 rounded bg-indigo-100 border-l-4 border-indigo-500"></div>
+                    <span class="text-gray-700 font-medium">规划任务 (教案/批改)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-4 h-4 rounded bg-green-100 border-l-4 border-green-500"></div>
+                    <span class="text-gray-700 font-medium">空闲/机动 (可休息)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kanban Board -->
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4" id="kanban-board">
+            <!-- Columns will be injected by JS -->
+        </div>
+    </div>
+
+    <script>
+        const scheduleData = {
+            "周一": [
+                { time: "08:00 - 09:00", duration: "60'", title: "📝 作业批改", type: "planned" },
+                { time: "09:00 - 09:35", duration: "35'", title: "🏃 早操大课间", type: "teaching" },
+                { time: "09:35 - 10:15", duration: "40'", title: "📖 语文", type: "teaching" },
+                { time: "10:15 - 10:30", duration: "15'", title: "☕ 课间休息", type: "free" },
+                { time: "10:30 - 10:35", duration: "5'", title: "👀 眼保健操", type: "teaching" },
+                { time: "10:35 - 11:05", duration: "30'", title: "📝 作业批改", type: "planned" },
+                { time: "11:05 - 11:25", duration: "20'", title: "🍃 自由机动", type: "free" },
+                { time: "11:25 - 12:00", duration: "35'", title: "📖 语文", type: "teaching" },
+                { time: "12:00 - 14:00", duration: "120'", title: "🍱 午休及午餐", type: "free" },
+                { time: "14:00 - 15:05", duration: "65'", title: "📚 教案书写", type: "planned" },
+                { time: "15:05 - 15:10", duration: "5'", title: "👀 眼保健操", type: "teaching" },
+                { time: "15:10 - 15:45", duration: "35'", title: "🍃 自由机动", type: "free" },
+                { time: "15:45 - 16:20", duration: "35'", title: "🏃 下午大课间", type: "teaching" },
+                { time: "16:20 - 16:25", duration: "5'", title: "🎒 放学", type: "free" },
+                { time: "16:25 - 17:05", duration: "40'", title: "辅 课后作业辅导", type: "teaching" },
+                { time: "17:05 - 18:00", duration: "55'", title: "📚 教案书写", type: "planned" }
+            ],
+            "周二": [
+                { time: "08:00 - 08:20", duration: "20'", title: "🍃 上班前空档", type: "free" },
+                { time: "08:20 - 09:00", duration: "40'", title: "📖 语文", type: "teaching" },
+                { time: "09:00 - 09:35", duration: "35'", title: "🏃 早操大课间", type: "teaching" },
+                { time: "09:35 - 10:30", duration: "55'", title: "📝 作业批改", type: "planned" },
+                { time: "10:30 - 10:35", duration: "5'", title: "👀 眼保健操", type: "teaching" },
+                { time: "10:35 - 12:00", duration: "85'", title: "📚 教案书写", type: "planned" },
+                { time: "12:00 - 14:00", duration: "120'", title: "🍱 午休及午餐", type: "free" },
+                { time: "14:00 - 14:15", duration: "15'", title: "🍃 课前准备+广播", type: "free" },
+                { time: "14:15 - 14:50", duration: "35'", title: "📖 阅读/少队课", type: "teaching" },
+                { time: "14:50 - 15:05", duration: "15'", title: "☕ 课间休息", type: "free" },
+                { time: "15:05 - 15:10", duration: "5'", title: "👀 眼保健操", type: "teaching" },
+                { time: "15:10 - 15:45", duration: "35'", title: "📝 作业批改", type: "planned" },
+                { time: "15:45 - 16:20", duration: "35'", title: "🏃 下午大课间", type: "teaching" },
+                { time: "16:20 - 16:25", duration: "5'", title: "🎒 放学", type: "free" },
+                { time: "16:25 - 17:00", duration: "35'", title: "📚 教案书写", type: "planned" },
+                { time: "17:00 - 17:20", duration: "20'", title: "🍃 自由机动", type: "free" },
+                { time: "17:20 - 18:00", duration: "40'", title: "🎨 课后兴趣拓展", type: "teaching" }
+            ],
+            "周三": [
+                { time: "08:00 - 09:00", duration: "60'", title: "📝 作业批改", type: "planned" },
+                { time: "09:00 - 09:35", duration: "35'", title: "🏃 早操大课间", type: "teaching" },
+                { time: "09:35 - 10:15", duration: "40'", title: "📖 语文", type: "teaching" },
+                { time: "10:15 - 10:30", duration: "15'", title: "☕ 课间休息", type: "free" },
+                { time: "10:30 - 10:35", duration: "5'", title: "👀 眼保健操", type: "teaching" },
+                { time: "10:35 - 11:10", duration: "35'", title: "🧹 劳动", type: "teaching" },
+                { time: "11:10 - 11:40", duration: "30'", title: "📝 作业批改", type: "planned" },
+                { time: "11:40 - 12:00", duration: "20'", title: "🍃 自由机动", type: "free" },
+                { time: "12:00 - 14:00", duration: "120'", title: "🍱 午休及午餐", type: "free" },
+                { time: "14:00 - 15:05", duration: "65'", title: "📚 教案书写", type: "planned" },
+                { time: "15:05 - 15:10", duration: "5'", title: "👀 眼保健操", type: "teaching" },
+                { time: "15:10 - 15:45", duration: "35'", title: "🍃 自由机动", type: "free" },
+                { time: "15:45 - 16:20", duration: "35'", title: "🏃 下午大课间", type: "teaching" },
+                { time: "16:20 - 16:25", duration: "5'", title: "🎒 放学", type: "free" },
+                { time: "16:25 - 17:05", duration: "40'", title: "辅 课后作业辅导", type: "teaching" },
+                { time: "17:05 - 18:00", duration: "55'", title: "📚 教案书写", type: "planned" }
+            ],
+            "周四": [
+                { time: "08:00 - 08:20", duration: "20'", title: "🍃 上班前空档", type: "free" },
+                { time: "08:20 - 09:00", duration: "40'", title: "📖 语文", type: "teaching" },
+                { time: "09:00 - 09:35", duration: "35'", title: "🏃 早操大课间", type: "teaching" },
+                { time: "09:35 - 10:30", duration: "55'", title: "📝 作业批改", type: "planned" },
+                { time: "10:30 - 10:35", duration: "5'", title: "👀 眼保健操", type: "teaching" },
+                { time: "10:35 - 12:00", duration: "85'", title: "📚 教案书写", type: "planned" },
+                { time: "12:00 - 14:00", duration: "120'", title: "🍱 午休及午餐", type: "free" },
+                { time: "14:00 - 14:35", duration: "35'", title: "📚 教案书写", type: "planned" },
+                { time: "14:35 - 15:05", duration: "30'", title: "🍃 自由机动", type: "free" },
+                { time: "15:05 - 15:10", duration: "5'", title: "👀 眼保健操", type: "teaching" },
+                { time: "15:10 - 15:45", duration: "35'", title: "✍️ 书法", type: "teaching" },
+                { time: "15:45 - 16:20", duration: "35'", title: "🏃 下午大课间", type: "teaching" },
+                { time: "16:20 - 16:25", duration: "5'", title: "🎒 放学", type: "free" },
+                { time: "16:25 - 17:00", duration: "35'", title: "📝 作业批改", type: "planned" },
+                { time: "17:00 - 17:20", duration: "20'", title: "🍃 自由机动", type: "free" },
+                { time: "17:20 - 18:00", duration: "40'", title: "🎨 课后兴趣拓展", type: "teaching" }
+            ],
+            "周五": [
+                { time: "08:00 - 09:00", duration: "60'", title: "📝 作业批改", type: "planned" },
+                { time: "09:00 - 09:35", duration: "35'", title: "🏃 早操大课间", type: "teaching" },
+                { time: "09:35 - 10:15", duration: "40'", title: "📖 语文", type: "teaching" },
+                { time: "10:15 - 10:30", duration: "15'", title: "☕ 课间休息", type: "free" },
+                { time: "10:30 - 10:35", duration: "5'", title: "👀 眼保健操", type: "teaching" },
+                { time: "10:35 - 12:00", duration: "85'", title: "📚 教案书写", type: "planned" },
+                { time: "12:00 - 14:00", duration: "120'", title: "🍱 午休及午餐", type: "free" },
+                { time: "14:00 - 15:05", duration: "65'", title: "🍃 自由机动", type: "free" },
+                { time: "15:05 - 15:10", duration: "5'", title: "👀 眼保健操", type: "teaching" },
+                { time: "15:10 - 15:40", duration: "30'", title: "📝 作业批改", type: "planned" },
+                { time: "15:40 - 15:45", duration: "5'", title: "🍃 自由机动", type: "free" },
+                { time: "15:45 - 16:20", duration: "35'", title: "🏃 下午大课间", type: "teaching" },
+                { time: "16:20 - 16:25", duration: "5'", title: "🎒 放学", type: "free" },
+                { time: "16:25 - 17:05", duration: "40'", title: "辅 课后作业辅导", type: "teaching" },
+                { time: "17:05 - 17:40", duration: "35'", title: "📚 教案书写", type: "planned" },
+                { time: "17:40 - 18:00", duration: "20'", title: "🍃 自由机动", type: "free" }
+            ]
+        };
+
+        function checkPassword() {
+            const input = document.getElementById('pwd-input').value;
+            if (input === '13227810437') {
+                document.getElementById('auth-modal').style.display = 'none';
+                document.getElementById('main-content').classList.remove('hidden');
+                updateHighlight();
+                setInterval(updateHighlight, 60000); // 每分钟更新一次高亮
+            } else {
+                document.getElementById('pwd-error').classList.remove('hidden');
+            }
+        }
+
+        function updateHighlight() {
+            const now = new Date();
+            const dayOfWeek = now.getDay(); // 0 (Sun) to 6 (Sat)
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+            const currentTimeStr = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`;
+
+            const daysMap = { 1: "周一", 2: "周二", 3: "周三", 4: "周四", 5: "周五" };
+            const currentDayName = daysMap[dayOfWeek];
+
+            // 清除所有高亮
+            document.querySelectorAll('.kanban-col-container').forEach(col => col.classList.remove('highlight-col'));
+            document.querySelectorAll('.task-card').forEach(card => card.classList.remove('highlight-task'));
+
+            if (currentDayName) {
+                // 高亮当前列
+                const colElement = document.getElementById(`col-${currentDayName}`);
+                if (colElement) {
+                    colElement.classList.add('highlight-col');
+                }
+
+                // 高亮当前任务
+                const tasks = scheduleData[currentDayName];
+                if (tasks) {
+                    tasks.forEach((task, index) => {
+                        const [start, end] = task.time.split(' - ');
+                        if (currentTimeStr >= start && currentTimeStr < end) {
+                            const cardElement = document.getElementById(`task-${currentDayName}-${index}`);
+                            if (cardElement) {
+                                cardElement.classList.add('highlight-task');
+                                // 平滑滚动到当前任务
+                                cardElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
+                        }
+                    });
+                }
+            }
+        }
+
+        const board = document.getElementById('kanban-board');
+
+        Object.entries(scheduleData).forEach(([day, tasks]) => {
+            // Create column
+            const col = document.createElement('div');
+            col.id = `col-${day}`;
+            col.className = 'kanban-col-container bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-[80vh] transition-all duration-300';
+            
+            // Column Header
+            const header = document.createElement('div');
+            header.className = 'p-4 border-b border-gray-100 bg-gray-50 rounded-t-xl';
+            header.innerHTML = `<h2 class="text-lg font-bold text-gray-800 text-center">${day}</h2>`;
+            col.appendChild(header);
+
+            // Column Body (Scrollable)
+            const body = document.createElement('div');
+            body.className = 'p-3 flex-1 overflow-y-auto kanban-col space-y-3';
+
+            tasks.forEach((task, index) => {
+                const card = document.createElement('div');
+                card.id = `task-${day}-${index}`;
+                card.className = `task-card p-3 rounded-lg shadow-sm text-sm transition-all duration-300 hover:scale-[1.02] cursor-default card-${task.type}`;
+                
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-1">
+                        <span class="font-semibold text-xs opacity-80">${task.time}</span>
+                        <span class="text-xs font-bold bg-white/50 px-1.5 py-0.5 rounded">${task.duration}</span>
+                    </div>
+                    <div class="font-bold text-base mt-1">${task.title}</div>
+                `;
+                body.appendChild(card);
+            });
+
+            col.appendChild(body);
+            board.appendChild(col);
+        });
+    </script>
+</body>
+</html>
