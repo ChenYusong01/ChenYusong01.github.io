@@ -73,540 +73,549 @@
         @keyframes popIn {
             to { transform: scale(1); }
         }
+        /* 移动端：筛选项横向滚动条隐藏，保证一行内整齐排列 */
+        .filter-scroll::-webkit-scrollbar {
+            display: none;
+        }
+        .filter-scroll {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
 </head>
 <body class="p-3 sm:p-6">
-    <!-- Auth Modal -->
-    <div id="auth-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm">
-        <div class="bg-white p-8 rounded-xl shadow-2xl w-96 text-center">
-            <h2 class="text-2xl font-bold mb-4 text-gray-800">访问受限</h2>
-            <p class="text-gray-600 mb-6">请输入查看密码以访问日程规划表</p>
-            <input type="password" id="pwd-input" class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="请输入密码" onkeypress="if(event.key === 'Enter') checkPassword()">
-            <p id="pwd-error" class="text-red-500 text-sm mb-4 hidden">密码错误，请重试</p>
-            <button onclick="checkPassword()" class="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium">确认</button>
-        </div>
+<!-- Auth Modal -->
+<div id="auth-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm">
+    <div class="bg-white p-8 rounded-xl shadow-2xl w-96 text-center">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800">访问受限</h2>
+        <p class="text-gray-600 mb-6">请输入查看密码以访问日程规划表</p>
+        <input type="password" id="pwd-input" class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="请输入密码" onkeypress="if(event.key === 'Enter') checkPassword()">
+        <p id="pwd-error" class="text-red-500 text-sm mb-4 hidden">密码错误，请重试</p>
+        <button onclick="checkPassword()" class="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium">确认</button>
     </div>
+</div>
 
-    <div id="main-content" class="max-w-7xl mx-auto hidden">
-        <!-- Header -->
-        <div class="mb-6 sm:mb-8 text-center">
-            <h1 class="text-xl sm:text-3xl font-bold text-gray-800 mb-3 sm:mb-4">王老师日常教学安排 & 任务规划看板</h1>
-            
-            <!-- Countdown -->
-            <div id="next-task-countdown" class="mb-4 text-sm sm:text-lg font-bold text-red-600 hidden bg-red-50 inline-block px-3 sm:px-6 py-2 rounded-full border border-red-200 shadow-sm max-w-full break-words">
-                ⏱️ 距离下一教学任务 (<span id="next-task-name"></span>) 还有: <span id="countdown-timer"></span>
-            </div>
+<div id="main-content" class="max-w-7xl mx-auto hidden">
+    <!-- Header -->
+    <div class="mb-6 sm:mb-8 text-center">
+        <h1 class="text-xl sm:text-3xl font-bold text-gray-800 mb-3 sm:mb-4">王老师日常教学安排 & 任务规划看板</h1>
 
-            <!-- View Controls -->
-            <div class="flex flex-wrap justify-center gap-2 sm:gap-4 mb-4 sm:mb-6 items-center bg-white p-2 sm:p-3 rounded-lg shadow-sm">
-                <button id="btn-overview" class="px-3 sm:px-4 py-1.5 bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200 active:bg-indigo-300 font-medium transition-colors text-sm sm:text-base">全览</button>
-                <div class="flex flex-wrap gap-2 sm:gap-4 sm:border-l sm:pl-4 justify-center" id="day-filters">
-                    <label class="day-label flex items-center gap-1 cursor-pointer px-3 py-1.5 rounded hover:bg-gray-100 active:bg-gray-200 select-none text-sm sm:text-base touch-manipulation"><input type="checkbox" value="周一" class="day-cb w-5 h-5 sm:w-4 sm:h-4 text-indigo-600 pointer-events-none"> 周一</label>
-                    <label class="day-label flex items-center gap-1 cursor-pointer px-3 py-1.5 rounded hover:bg-gray-100 active:bg-gray-200 select-none text-sm sm:text-base touch-manipulation"><input type="checkbox" value="周二" class="day-cb w-5 h-5 sm:w-4 sm:h-4 text-indigo-600 pointer-events-none"> 周二</label>
-                    <label class="day-label flex items-center gap-1 cursor-pointer px-3 py-1.5 rounded hover:bg-gray-100 active:bg-gray-200 select-none text-sm sm:text-base touch-manipulation"><input type="checkbox" value="周三" class="day-cb w-5 h-5 sm:w-4 sm:h-4 text-indigo-600 pointer-events-none"> 周三</label>
-                    <label class="day-label flex items-center gap-1 cursor-pointer px-3 py-1.5 rounded hover:bg-gray-100 active:bg-gray-200 select-none text-sm sm:text-base touch-manipulation"><input type="checkbox" value="周四" class="day-cb w-5 h-5 sm:w-4 sm:h-4 text-indigo-600 pointer-events-none"> 周四</label>
-                    <label class="day-label flex items-center gap-1 cursor-pointer px-3 py-1.5 rounded hover:bg-gray-100 active:bg-gray-200 select-none text-sm sm:text-base touch-manipulation"><input type="checkbox" value="周五" class="day-cb w-5 h-5 sm:w-4 sm:h-4 text-indigo-600 pointer-events-none"> 周五</label>
-                </div>
-            </div>
+        <!-- Countdown -->
+        <div id="next-task-countdown" class="mb-4 text-sm sm:text-lg font-bold text-red-600 hidden bg-red-50 inline-block px-3 sm:px-6 py-2 rounded-full border border-red-200 shadow-sm max-w-full break-words">
+            ⏱️ 距离下一教学任务 (<span id="next-task-name"></span>) 还有: <span id="countdown-timer"></span>
+        </div>
 
-            <div class="flex flex-wrap justify-center gap-2 sm:gap-6 text-xs sm:text-sm" id="type-filters">
-                <label class="type-label flex items-center gap-2 cursor-pointer opacity-100 transition-opacity hover:opacity-80 active:bg-gray-100 px-3 py-1.5 rounded select-none touch-manipulation">
-                    <input type="checkbox" value="teaching" class="type-cb w-5 h-5 sm:w-4 sm:h-4 text-red-600 rounded focus:ring-red-500 pointer-events-none" checked>
-                    <div class="w-4 h-4 rounded bg-red-100 border-l-4 border-red-500"></div>
-                    <span class="text-gray-700 font-medium transition-all duration-300">教学占用 <span class="hidden sm:inline">(不可排期)</span></span>
-                </label>
-                <label class="type-label flex items-center gap-2 cursor-pointer opacity-100 transition-opacity hover:opacity-80 active:bg-gray-100 px-3 py-1.5 rounded select-none touch-manipulation">
-                    <input type="checkbox" value="planned" class="type-cb w-5 h-5 sm:w-4 sm:h-4 text-indigo-600 rounded focus:ring-indigo-500 pointer-events-none" checked>
-                    <div class="w-4 h-4 rounded bg-indigo-100 border-l-4 border-indigo-500"></div>
-                    <span class="text-gray-700 font-medium transition-all duration-300">规划任务 <span class="hidden sm:inline">(教案/批改)</span></span>
-                </label>
-                <label class="type-label flex items-center gap-2 cursor-pointer opacity-100 transition-opacity hover:opacity-80 active:bg-gray-100 px-3 py-1.5 rounded select-none touch-manipulation">
-                    <input type="checkbox" value="free" class="type-cb w-5 h-5 sm:w-4 sm:h-4 text-green-600 rounded focus:ring-green-500 pointer-events-none" checked>
-                    <div class="w-4 h-4 rounded bg-green-100 border-l-4 border-green-500"></div>
-                    <span class="text-gray-700 font-medium transition-all duration-300">空闲/机动 <span class="hidden sm:inline">(可休息)</span></span>
-                </label>
+        <!-- View Controls: 日期筛选行 -->
+        <div class="flex sm:flex-wrap sm:justify-center gap-2 sm:gap-4 mb-3 sm:mb-6 items-center bg-white p-2 sm:p-3 rounded-lg shadow-sm overflow-x-auto filter-scroll">
+            <button id="btn-overview" class="flex-shrink-0 px-3 sm:px-4 py-1.5 bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200 active:bg-indigo-300 font-medium transition-colors text-sm sm:text-base">全览</button>
+            <div class="flex flex-nowrap sm:flex-wrap gap-1 sm:gap-4 sm:border-l sm:pl-4 sm:justify-center flex-shrink-0" id="day-filters">
+                <label class="day-label flex items-center gap-1 cursor-pointer px-2 sm:px-3 py-1.5 rounded hover:bg-gray-100 active:bg-gray-200 select-none text-sm sm:text-base touch-manipulation flex-shrink-0"><input type="checkbox" value="周一" class="day-cb w-4 h-4 text-indigo-600 pointer-events-none"> 周一</label>
+                <label class="day-label flex items-center gap-1 cursor-pointer px-2 sm:px-3 py-1.5 rounded hover:bg-gray-100 active:bg-gray-200 select-none text-sm sm:text-base touch-manipulation flex-shrink-0"><input type="checkbox" value="周二" class="day-cb w-4 h-4 text-indigo-600 pointer-events-none"> 周二</label>
+                <label class="day-label flex items-center gap-1 cursor-pointer px-2 sm:px-3 py-1.5 rounded hover:bg-gray-100 active:bg-gray-200 select-none text-sm sm:text-base touch-manipulation flex-shrink-0"><input type="checkbox" value="周三" class="day-cb w-4 h-4 text-indigo-600 pointer-events-none"> 周三</label>
+                <label class="day-label flex items-center gap-1 cursor-pointer px-2 sm:px-3 py-1.5 rounded hover:bg-gray-100 active:bg-gray-200 select-none text-sm sm:text-base touch-manipulation flex-shrink-0"><input type="checkbox" value="周四" class="day-cb w-4 h-4 text-indigo-600 pointer-events-none"> 周四</label>
+                <label class="day-label flex items-center gap-1 cursor-pointer px-2 sm:px-3 py-1.5 rounded hover:bg-gray-100 active:bg-gray-200 select-none text-sm sm:text-base touch-manipulation flex-shrink-0"><input type="checkbox" value="周五" class="day-cb w-4 h-4 text-indigo-600 pointer-events-none"> 周五</label>
             </div>
         </div>
 
-        <!-- Kanban Board -->
-        <div class="grid gap-3 sm:gap-4 transition-all duration-500" id="kanban-board">
-            <!-- Columns will be injected by JS -->
+        <!-- View Controls: 类型筛选行 -->
+        <div class="flex sm:flex-wrap flex-nowrap sm:justify-center justify-start gap-1 sm:gap-6 text-xs sm:text-sm bg-white sm:bg-transparent p-2 sm:p-0 rounded-lg shadow-sm sm:shadow-none overflow-x-auto filter-scroll" id="type-filters">
+            <label class="type-label flex items-center gap-1.5 sm:gap-2 cursor-pointer opacity-100 transition-opacity hover:opacity-80 active:bg-gray-100 px-2 sm:px-3 py-1.5 rounded select-none touch-manipulation flex-shrink-0">
+                <input type="checkbox" value="teaching" class="type-cb w-4 h-4 text-red-600 rounded focus:ring-red-500 pointer-events-none" checked>
+                <div class="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded bg-red-100 border-l-4 border-red-500 flex-shrink-0"></div>
+                <span class="text-gray-700 font-medium transition-all duration-300 whitespace-nowrap">教学占用 <span class="hidden sm:inline">(不可排期)</span></span>
+            </label>
+            <label class="type-label flex items-center gap-1.5 sm:gap-2 cursor-pointer opacity-100 transition-opacity hover:opacity-80 active:bg-gray-100 px-2 sm:px-3 py-1.5 rounded select-none touch-manipulation flex-shrink-0">
+                <input type="checkbox" value="planned" class="type-cb w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500 pointer-events-none" checked>
+                <div class="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded bg-indigo-100 border-l-4 border-indigo-500 flex-shrink-0"></div>
+                <span class="text-gray-700 font-medium transition-all duration-300 whitespace-nowrap">规划任务 <span class="hidden sm:inline">(教案/批改)</span></span>
+            </label>
+            <label class="type-label flex items-center gap-1.5 sm:gap-2 cursor-pointer opacity-100 transition-opacity hover:opacity-80 active:bg-gray-100 px-2 sm:px-3 py-1.5 rounded select-none touch-manipulation flex-shrink-0">
+                <input type="checkbox" value="free" class="type-cb w-4 h-4 text-green-600 rounded focus:ring-green-500 pointer-events-none" checked>
+                <div class="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded bg-green-100 border-l-4 border-green-500 flex-shrink-0"></div>
+                <span class="text-gray-700 font-medium transition-all duration-300 whitespace-nowrap">空闲/机动 <span class="hidden sm:inline">(可休息)</span></span>
+            </label>
         </div>
     </div>
 
-    <!-- Sidebar (Pomodoro) -->
-    <div id="sidebar" class="fixed right-0 top-1/4 w-60 sm:w-64 max-w-[80vw] bg-white shadow-2xl rounded-l-2xl p-4 sm:p-5 border border-gray-200 z-40 transform transition-transform duration-300 translate-x-full">
-        <button id="sidebar-toggle" onclick="toggleSidebar()" class="absolute -left-10 top-1/2 transform -translate-y-1/2 bg-white w-10 h-12 flex items-center justify-center rounded-l-lg shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),-4px_0_6px_-1px_rgba(0,0,0,0.1)] border border-r-0 border-gray-200 text-gray-600 hover:text-indigo-600 focus:outline-none touch-manipulation">
-            <span id="sidebar-icon" class="text-lg">◀</span>
-        </button>
-        <h3 class="text-xl font-bold mb-4 text-gray-800 flex items-center gap-2">🍅 番茄时钟</h3>
-        <div class="mb-4">
-            <label class="block text-sm mb-1 text-gray-600">专注时长 (分钟):</label>
-            <input type="number" id="focus-duration" value="25" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none">
+    <!-- Kanban Board -->
+    <div class="grid gap-3 sm:gap-4 transition-all duration-500" id="kanban-board">
+        <!-- Columns will be injected by JS -->
+    </div>
+</div>
+
+<!-- Sidebar (Pomodoro) -->
+<div id="sidebar" class="fixed right-0 top-1/4 w-60 sm:w-64 max-w-[80vw] bg-white shadow-2xl rounded-l-2xl p-4 sm:p-5 border border-gray-200 z-40 transform transition-transform duration-300 translate-x-full">
+    <button id="sidebar-toggle" onclick="toggleSidebar()" class="absolute -left-10 top-1/2 transform -translate-y-1/2 bg-white w-10 h-12 flex items-center justify-center rounded-l-lg shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),-4px_0_6px_-1px_rgba(0,0,0,0.1)] border border-r-0 border-gray-200 text-gray-600 hover:text-indigo-600 focus:outline-none touch-manipulation">
+        <span id="sidebar-icon" class="text-lg">◀</span>
+    </button>
+    <h3 class="text-xl font-bold mb-4 text-gray-800 flex items-center gap-2">🍅 番茄时钟</h3>
+    <div class="mb-4">
+        <label class="block text-sm mb-1 text-gray-600">专注时长 (分钟):</label>
+        <input type="number" id="focus-duration" value="25" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none">
+    </div>
+    <button onclick="startFocus(false)" class="w-full bg-indigo-600 text-white py-2.5 rounded-lg mb-3 hover:bg-indigo-700 transition-colors font-medium shadow-sm">开始倒计时专注</button>
+    <button onclick="startFocus(true)" class="w-full bg-emerald-500 text-white py-2.5 rounded-lg hover:bg-emerald-600 transition-colors font-medium shadow-sm">开始正向计时专注</button>
+</div>
+
+<!-- Focus Overlay -->
+<div id="focus-overlay" class="fixed inset-0 bg-gray-900/60 backdrop-blur-md z-50 hidden flex-col items-center justify-center">
+    <div class="text-white text-6xl font-bold mb-12 tracking-wider drop-shadow-lg" id="focus-timer-display">25:00</div>
+
+    <!-- Floating Island -->
+    <div id="floating-island" class="relative w-80 h-80 bg-emerald-100 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.3)] border-8 border-emerald-300 flex items-end justify-center overflow-hidden mb-12">
+        <div class="absolute bottom-0 w-full h-2/5 bg-emerald-500"></div>
+        <div class="absolute bottom-2/5 w-full h-4 bg-emerald-400"></div>
+        <div id="trees-container" class="absolute bottom-[35%] w-full flex justify-center items-end gap-3 px-6 flex-wrap z-10">
+            <!-- Trees will be appended here -->
         </div>
-        <button onclick="startFocus(false)" class="w-full bg-indigo-600 text-white py-2.5 rounded-lg mb-3 hover:bg-indigo-700 transition-colors font-medium shadow-sm">开始倒计时专注</button>
-        <button onclick="startFocus(true)" class="w-full bg-emerald-500 text-white py-2.5 rounded-lg hover:bg-emerald-600 transition-colors font-medium shadow-sm">开始正向计时专注</button>
     </div>
 
-    <!-- Focus Overlay -->
-    <div id="focus-overlay" class="fixed inset-0 bg-gray-900/60 backdrop-blur-md z-50 hidden flex-col items-center justify-center">
-        <div class="text-white text-6xl font-bold mb-12 tracking-wider drop-shadow-lg" id="focus-timer-display">25:00</div>
-        
-        <!-- Floating Island -->
-        <div id="floating-island" class="relative w-80 h-80 bg-emerald-100 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.3)] border-8 border-emerald-300 flex items-end justify-center overflow-hidden mb-12">
-            <div class="absolute bottom-0 w-full h-2/5 bg-emerald-500"></div>
-            <div class="absolute bottom-2/5 w-full h-4 bg-emerald-400"></div>
-            <div id="trees-container" class="absolute bottom-[35%] w-full flex justify-center items-end gap-3 px-6 flex-wrap z-10">
-                <!-- Trees will be appended here -->
-            </div>
-        </div>
-        
-        <button onclick="endFocus()" class="px-8 py-3 bg-red-500 text-white rounded-full hover:bg-red-600 shadow-lg font-bold text-lg transition-transform hover:scale-105">结束专注</button>
-    </div>
+    <button onclick="endFocus()" class="px-8 py-3 bg-red-500 text-white rounded-full hover:bg-red-600 shadow-lg font-bold text-lg transition-transform hover:scale-105">结束专注</button>
+</div>
 
-    <script>
-        const scheduleData = {
-            "周一": [
-                { time: "08:00 - 09:00", duration: "60'", title: "📝 作业批改", type: "planned" },
-                { time: "09:00 - 09:35", duration: "35'", title: "🏃 早操大课间", type: "teaching" },
-                { time: "09:35 - 10:15", duration: "40'", title: "📖 语文", type: "teaching" },
-                { time: "10:15 - 10:30", duration: "15'", title: "☕ 课间休息", type: "free" },
-                { time: "10:30 - 10:35", duration: "5'", title: "👀 眼保健操", type: "teaching" },
-                { time: "10:35 - 11:05", duration: "30'", title: "📝 作业批改", type: "planned" },
-                { time: "11:05 - 11:25", duration: "20'", title: "🍃 自由机动", type: "free" },
-                { time: "11:25 - 12:00", duration: "35'", title: "📖 语文", type: "teaching" },
-                { time: "12:00 - 14:00", duration: "120'", title: "🍱 午休及午餐", type: "free" },
-                { time: "14:00 - 15:05", duration: "65'", title: "📚 教案书写", type: "planned" },
-                { time: "15:05 - 15:10", duration: "5'", title: "👀 眼保健操", type: "teaching" },
-                { time: "15:10 - 15:45", duration: "35'", title: "🍃 自由机动", type: "free" },
-                { time: "15:45 - 16:20", duration: "35'", title: "🏃 下午大课间", type: "teaching" },
-                { time: "16:20 - 16:25", duration: "5'", title: "🎒 放学", type: "free" },
-                { time: "16:25 - 17:05", duration: "40'", title: "辅 课后作业辅导", type: "teaching" },
-                { time: "17:05 - 18:00", duration: "55'", title: "📚 教案书写", type: "planned" }
-            ],
-            "周二": [
-                { time: "08:00 - 08:20", duration: "20'", title: "🍃 上班前空档", type: "free" },
-                { time: "08:20 - 09:00", duration: "40'", title: "📖 语文", type: "teaching" },
-                { time: "09:00 - 09:35", duration: "35'", title: "🏃 早操大课间", type: "teaching" },
-                { time: "09:35 - 10:30", duration: "55'", title: "📝 作业批改", type: "planned" },
-                { time: "10:30 - 10:35", duration: "5'", title: "👀 眼保健操", type: "teaching" },
-                { time: "10:35 - 12:00", duration: "85'", title: "📚 教案书写", type: "planned" },
-                { time: "12:00 - 14:00", duration: "120'", title: "🍱 午休及午餐", type: "free" },
-                { time: "14:00 - 14:15", duration: "15'", title: "🍃 课前准备+广播", type: "free" },
-                { time: "14:15 - 14:50", duration: "35'", title: "📖 阅读/少队课", type: "teaching" },
-                { time: "14:50 - 15:05", duration: "15'", title: "☕ 课间休息", type: "free" },
-                { time: "15:05 - 15:10", duration: "5'", title: "👀 眼保健操", type: "teaching" },
-                { time: "15:10 - 15:45", duration: "35'", title: "📝 作业批改", type: "planned" },
-                { time: "15:45 - 16:20", duration: "35'", title: "🏃 下午大课间", type: "teaching" },
-                { time: "16:20 - 16:25", duration: "5'", title: "🎒 放学", type: "free" },
-                { time: "16:25 - 17:00", duration: "35'", title: "📚 教案书写", type: "planned" },
-                { time: "17:00 - 17:20", duration: "20'", title: "🍃 自由机动", type: "free" },
-                { time: "17:20 - 18:00", duration: "40'", title: "🎨 课后兴趣拓展", type: "teaching" }
-            ],
-            "周三": [
-                { time: "08:00 - 09:00", duration: "60'", title: "📝 作业批改", type: "planned" },
-                { time: "09:00 - 09:35", duration: "35'", title: "🏃 早操大课间", type: "teaching" },
-                { time: "09:35 - 10:15", duration: "40'", title: "📖 语文", type: "teaching" },
-                { time: "10:15 - 10:30", duration: "15'", title: "☕ 课间休息", type: "free" },
-                { time: "10:30 - 10:35", duration: "5'", title: "👀 眼保健操", type: "teaching" },
-                { time: "10:35 - 11:10", duration: "35'", title: "🧹 劳动", type: "teaching" },
-                { time: "11:10 - 11:40", duration: "30'", title: "📝 作业批改", type: "planned" },
-                { time: "11:40 - 12:00", duration: "20'", title: "🍃 自由机动", type: "free" },
-                { time: "12:00 - 14:00", duration: "120'", title: "🍱 午休及午餐", type: "free" },
-                { time: "14:00 - 15:05", duration: "65'", title: "📚 教案书写", type: "planned" },
-                { time: "15:05 - 15:10", duration: "5'", title: "👀 眼保健操", type: "teaching" },
-                { time: "15:10 - 15:45", duration: "35'", title: "🍃 自由机动", type: "free" },
-                { time: "15:45 - 16:20", duration: "35'", title: "🏃 下午大课间", type: "teaching" },
-                { time: "16:20 - 16:25", duration: "5'", title: "🎒 放学", type: "free" },
-                { time: "16:25 - 17:05", duration: "40'", title: "辅 课后作业辅导", type: "teaching" },
-                { time: "17:05 - 18:00", duration: "55'", title: "📚 教案书写", type: "planned" }
-            ],
-            "周四": [
-                { time: "08:00 - 08:20", duration: "20'", title: "🍃 上班前空档", type: "free" },
-                { time: "08:20 - 09:00", duration: "40'", title: "📖 语文", type: "teaching" },
-                { time: "09:00 - 09:35", duration: "35'", title: "🏃 早操大课间", type: "teaching" },
-                { time: "09:35 - 10:30", duration: "55'", title: "📝 作业批改", type: "planned" },
-                { time: "10:30 - 10:35", duration: "5'", title: "👀 眼保健操", type: "teaching" },
-                { time: "10:35 - 12:00", duration: "85'", title: "📚 教案书写", type: "planned" },
-                { time: "12:00 - 14:00", duration: "120'", title: "🍱 午休及午餐", type: "free" },
-                { time: "14:00 - 14:35", duration: "35'", title: "📚 教案书写", type: "planned" },
-                { time: "14:35 - 15:05", duration: "30'", title: "🍃 自由机动", type: "free" },
-                { time: "15:05 - 15:10", duration: "5'", title: "👀 眼保健操", type: "teaching" },
-                { time: "15:10 - 15:45", duration: "35'", title: "✍️ 书法", type: "teaching" },
-                { time: "15:45 - 16:20", duration: "35'", title: "🏃 下午大课间", type: "teaching" },
-                { time: "16:20 - 16:25", duration: "5'", title: "🎒 放学", type: "free" },
-                { time: "16:25 - 17:00", duration: "35'", title: "📝 作业批改", type: "planned" },
-                { time: "17:00 - 17:20", duration: "20'", title: "🍃 自由机动", type: "free" },
-                { time: "17:20 - 18:00", duration: "40'", title: "🎨 课后兴趣拓展", type: "teaching" }
-            ],
-            "周五": [
-                { time: "08:00 - 09:00", duration: "60'", title: "📝 作业批改", type: "planned" },
-                { time: "09:00 - 09:35", duration: "35'", title: "🏃 早操大课间", type: "teaching" },
-                { time: "09:35 - 10:15", duration: "40'", title: "📖 语文", type: "teaching" },
-                { time: "10:15 - 10:30", duration: "15'", title: "☕ 课间休息", type: "free" },
-                { time: "10:30 - 10:35", duration: "5'", title: "👀 眼保健操", type: "teaching" },
-                { time: "10:35 - 12:00", duration: "85'", title: "📚 教案书写", type: "planned" },
-                { time: "12:00 - 14:00", duration: "120'", title: "🍱 午休及午餐", type: "free" },
-                { time: "14:00 - 15:05", duration: "65'", title: "🍃 自由机动", type: "free" },
-                { time: "15:05 - 15:10", duration: "5'", title: "👀 眼保健操", type: "teaching" },
-                { time: "15:10 - 15:40", duration: "30'", title: "📝 作业批改", type: "planned" },
-                { time: "15:40 - 15:45", duration: "5'", title: "🍃 自由机动", type: "free" },
-                { time: "15:45 - 16:20", duration: "35'", title: "🏃 下午大课间", type: "teaching" },
-                { time: "16:20 - 16:25", duration: "5'", title: "🎒 放学", type: "free" },
-                { time: "16:25 - 17:05", duration: "40'", title: "辅 课后作业辅导", type: "teaching" },
-                { time: "17:05 - 17:40", duration: "35'", title: "📚 教案书写", type: "planned" },
-                { time: "17:40 - 18:00", duration: "20'", title: "🍃 自由机动", type: "free" }
-            ]
-        };
+<script>
+    const scheduleData = {
+        "周一": [
+            { time: "08:00 - 09:00", duration: "60'", title: "📝 作业批改", type: "planned" },
+            { time: "09:00 - 09:35", duration: "35'", title: "🏃 早操大课间", type: "teaching" },
+            { time: "09:35 - 10:15", duration: "40'", title: "📖 语文", type: "teaching" },
+            { time: "10:15 - 10:30", duration: "15'", title: "☕ 课间休息", type: "free" },
+            { time: "10:30 - 10:35", duration: "5'", title: "👀 眼保健操", type: "teaching" },
+            { time: "10:35 - 11:05", duration: "30'", title: "📝 作业批改", type: "planned" },
+            { time: "11:05 - 11:25", duration: "20'", title: "🍃 自由机动", type: "free" },
+            { time: "11:25 - 12:00", duration: "35'", title: "📖 语文", type: "teaching" },
+            { time: "12:00 - 14:00", duration: "120'", title: "🍱 午休及午餐", type: "free" },
+            { time: "14:00 - 15:05", duration: "65'", title: "📚 教案书写", type: "planned" },
+            { time: "15:05 - 15:10", duration: "5'", title: "👀 眼保健操", type: "teaching" },
+            { time: "15:10 - 15:45", duration: "35'", title: "🍃 自由机动", type: "free" },
+            { time: "15:45 - 16:20", duration: "35'", title: "🏃 下午大课间", type: "teaching" },
+            { time: "16:20 - 16:25", duration: "5'", title: "🎒 放学", type: "free" },
+            { time: "16:25 - 17:05", duration: "40'", title: "辅 课后作业辅导", type: "teaching" },
+            { time: "17:05 - 18:00", duration: "55'", title: "📚 教案书写", type: "planned" }
+        ],
+        "周二": [
+            { time: "08:00 - 08:20", duration: "20'", title: "🍃 上班前空档", type: "free" },
+            { time: "08:20 - 09:00", duration: "40'", title: "📖 语文", type: "teaching" },
+            { time: "09:00 - 09:35", duration: "35'", title: "🏃 早操大课间", type: "teaching" },
+            { time: "09:35 - 10:30", duration: "55'", title: "📝 作业批改", type: "planned" },
+            { time: "10:30 - 10:35", duration: "5'", title: "👀 眼保健操", type: "teaching" },
+            { time: "10:35 - 12:00", duration: "85'", title: "📚 教案书写", type: "planned" },
+            { time: "12:00 - 14:00", duration: "120'", title: "🍱 午休及午餐", type: "free" },
+            { time: "14:00 - 14:15", duration: "15'", title: "🍃 课前准备+广播", type: "free" },
+            { time: "14:15 - 14:50", duration: "35'", title: "📖 阅读/少队课", type: "teaching" },
+            { time: "14:50 - 15:05", duration: "15'", title: "☕ 课间休息", type: "free" },
+            { time: "15:05 - 15:10", duration: "5'", title: "👀 眼保健操", type: "teaching" },
+            { time: "15:10 - 15:45", duration: "35'", title: "📝 作业批改", type: "planned" },
+            { time: "15:45 - 16:20", duration: "35'", title: "🏃 下午大课间", type: "teaching" },
+            { time: "16:20 - 16:25", duration: "5'", title: "🎒 放学", type: "free" },
+            { time: "16:25 - 17:00", duration: "35'", title: "📚 教案书写", type: "planned" },
+            { time: "17:00 - 17:20", duration: "20'", title: "🍃 自由机动", type: "free" },
+            { time: "17:20 - 18:00", duration: "40'", title: "🎨 课后兴趣拓展", type: "teaching" }
+        ],
+        "周三": [
+            { time: "08:00 - 09:00", duration: "60'", title: "📝 作业批改", type: "planned" },
+            { time: "09:00 - 09:35", duration: "35'", title: "🏃 早操大课间", type: "teaching" },
+            { time: "09:35 - 10:15", duration: "40'", title: "📖 语文", type: "teaching" },
+            { time: "10:15 - 10:30", duration: "15'", title: "☕ 课间休息", type: "free" },
+            { time: "10:30 - 10:35", duration: "5'", title: "👀 眼保健操", type: "teaching" },
+            { time: "10:35 - 11:10", duration: "35'", title: "🧹 劳动", type: "teaching" },
+            { time: "11:10 - 11:40", duration: "30'", title: "📝 作业批改", type: "planned" },
+            { time: "11:40 - 12:00", duration: "20'", title: "🍃 自由机动", type: "free" },
+            { time: "12:00 - 14:00", duration: "120'", title: "🍱 午休及午餐", type: "free" },
+            { time: "14:00 - 15:05", duration: "65'", title: "📚 教案书写", type: "planned" },
+            { time: "15:05 - 15:10", duration: "5'", title: "👀 眼保健操", type: "teaching" },
+            { time: "15:10 - 15:45", duration: "35'", title: "🍃 自由机动", type: "free" },
+            { time: "15:45 - 16:20", duration: "35'", title: "🏃 下午大课间", type: "teaching" },
+            { time: "16:20 - 16:25", duration: "5'", title: "🎒 放学", type: "free" },
+            { time: "16:25 - 17:05", duration: "40'", title: "辅 课后作业辅导", type: "teaching" },
+            { time: "17:05 - 18:00", duration: "55'", title: "📚 教案书写", type: "planned" }
+        ],
+        "周四": [
+            { time: "08:00 - 08:20", duration: "20'", title: "🍃 上班前空档", type: "free" },
+            { time: "08:20 - 09:00", duration: "40'", title: "📖 语文", type: "teaching" },
+            { time: "09:00 - 09:35", duration: "35'", title: "🏃 早操大课间", type: "teaching" },
+            { time: "09:35 - 10:30", duration: "55'", title: "📝 作业批改", type: "planned" },
+            { time: "10:30 - 10:35", duration: "5'", title: "👀 眼保健操", type: "teaching" },
+            { time: "10:35 - 12:00", duration: "85'", title: "📚 教案书写", type: "planned" },
+            { time: "12:00 - 14:00", duration: "120'", title: "🍱 午休及午餐", type: "free" },
+            { time: "14:00 - 14:35", duration: "35'", title: "📚 教案书写", type: "planned" },
+            { time: "14:35 - 15:05", duration: "30'", title: "🍃 自由机动", type: "free" },
+            { time: "15:05 - 15:10", duration: "5'", title: "👀 眼保健操", type: "teaching" },
+            { time: "15:10 - 15:45", duration: "35'", title: "✍️ 书法", type: "teaching" },
+            { time: "15:45 - 16:20", duration: "35'", title: "🏃 下午大课间", type: "teaching" },
+            { time: "16:20 - 16:25", duration: "5'", title: "🎒 放学", type: "free" },
+            { time: "16:25 - 17:00", duration: "35'", title: "📝 作业批改", type: "planned" },
+            { time: "17:00 - 17:20", duration: "20'", title: "🍃 自由机动", type: "free" },
+            { time: "17:20 - 18:00", duration: "40'", title: "🎨 课后兴趣拓展", type: "teaching" }
+        ],
+        "周五": [
+            { time: "08:00 - 09:00", duration: "60'", title: "📝 作业批改", type: "planned" },
+            { time: "09:00 - 09:35", duration: "35'", title: "🏃 早操大课间", type: "teaching" },
+            { time: "09:35 - 10:15", duration: "40'", title: "📖 语文", type: "teaching" },
+            { time: "10:15 - 10:30", duration: "15'", title: "☕ 课间休息", type: "free" },
+            { time: "10:30 - 10:35", duration: "5'", title: "👀 眼保健操", type: "teaching" },
+            { time: "10:35 - 12:00", duration: "85'", title: "📚 教案书写", type: "planned" },
+            { time: "12:00 - 14:00", duration: "120'", title: "🍱 午休及午餐", type: "free" },
+            { time: "14:00 - 15:05", duration: "65'", title: "🍃 自由机动", type: "free" },
+            { time: "15:05 - 15:10", duration: "5'", title: "👀 眼保健操", type: "teaching" },
+            { time: "15:10 - 15:40", duration: "30'", title: "📝 作业批改", type: "planned" },
+            { time: "15:40 - 15:45", duration: "5'", title: "🍃 自由机动", type: "free" },
+            { time: "15:45 - 16:20", duration: "35'", title: "🏃 下午大课间", type: "teaching" },
+            { time: "16:20 - 16:25", duration: "5'", title: "🎒 放学", type: "free" },
+            { time: "16:25 - 17:05", duration: "40'", title: "辅 课后作业辅导", type: "teaching" },
+            { time: "17:05 - 17:40", duration: "35'", title: "📚 教案书写", type: "planned" },
+            { time: "17:40 - 18:00", duration: "20'", title: "🍃 自由机动", type: "free" }
+        ]
+    };
 
-        function checkPassword() {
-            const input = document.getElementById('pwd-input').value;
-            if (input === '13227810437') {
-                document.getElementById('auth-modal').style.display = 'none';
-                document.getElementById('main-content').classList.remove('hidden');
-                
-                // Request Notification Permission
-                if (Notification.permission !== "granted" && Notification.permission !== "denied") {
-                    Notification.requestPermission();
-                }
+    function checkPassword() {
+        const input = document.getElementById('pwd-input').value;
+        if (input === '13227810437') {
+            document.getElementById('auth-modal').style.display = 'none';
+            document.getElementById('main-content').classList.remove('hidden');
 
-                initViewControls();
-                updateHighlight();
-                setInterval(updateHighlight, 60000); // 每分钟更新一次高亮
-                
-                updateCountdown();
-                setInterval(updateCountdown, 1000); // 每秒更新倒计时
-            } else {
-                document.getElementById('pwd-error').classList.remove('hidden');
+            // Request Notification Permission
+            if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+                Notification.requestPermission();
             }
+
+            initViewControls();
+            updateHighlight();
+            setInterval(updateHighlight, 60000); // 每分钟更新一次高亮
+
+            updateCountdown();
+            setInterval(updateCountdown, 1000); // 每秒更新倒计时
+        } else {
+            document.getElementById('pwd-error').classList.remove('hidden');
         }
+    }
 
-        // --- View Controls Logic ---
-        function initViewControls() {
-            const checkboxes = document.querySelectorAll('.day-cb');
-            const btnOverview = document.getElementById('btn-overview');
-            
-            const now = new Date();
-            const dayOfWeek = now.getDay();
-            const daysMap = { 1: "周一", 2: "周二", 3: "周三", 4: "周四", 5: "周五" };
-            const currentDayName = daysMap[dayOfWeek] || "周一";
+    // --- View Controls Logic ---
+    function initViewControls() {
+        const checkboxes = document.querySelectorAll('.day-cb');
+        const btnOverview = document.getElementById('btn-overview');
 
-            checkboxes.forEach(cb => {
-                cb.checked = (cb.value === currentDayName);
-                cb.addEventListener('change', updateBoardView);
-            });
+        const now = new Date();
+        const dayOfWeek = now.getDay();
+        const daysMap = { 1: "周一", 2: "周二", 3: "周三", 4: "周四", 5: "周五" };
+        const currentDayName = daysMap[dayOfWeek] || "周一";
 
-            btnOverview.addEventListener('click', () => {
-                checkboxes.forEach(cb => cb.checked = true);
-                updateBoardView();
-            });
+        checkboxes.forEach(cb => {
+            cb.checked = (cb.value === currentDayName);
+            cb.addEventListener('change', updateBoardView);
+        });
 
-            // 类型筛选：强制确保初始勾选状态生效（防止部分浏览器在动态绑定前丢失 checked 属性）
-            const typeCheckboxes = document.querySelectorAll('.type-cb');
-            typeCheckboxes.forEach(cb => {
-                // 根据 HTML 的 defaultChecked 属性强制同步
-                cb.checked = cb.hasAttribute('checked') ? true : cb.defaultChecked;
-                cb.addEventListener('change', updateTaskVisibility);
-            });
-
+        btnOverview.addEventListener('click', () => {
+            checkboxes.forEach(cb => cb.checked = true);
             updateBoardView();
-            updateTaskVisibility();
-        }
+        });
 
-        function updateTaskVisibility() {
-            const checkedTypes = Array.from(document.querySelectorAll('.type-cb:checked')).map(cb => cb.value);
-            document.querySelectorAll('.task-card').forEach(card => {
-                const isTeaching = card.classList.contains('card-teaching');
-                const isPlanned = card.classList.contains('card-planned');
-                const isFree = card.classList.contains('card-free');
-                
-                let type = '';
-                if (isTeaching) type = 'teaching';
-                if (isPlanned) type = 'planned';
-                if (isFree) type = 'free';
+        // 类型筛选：强制确保初始勾选状态生效（防止部分浏览器在动态绑定前丢失 checked 属性）
+        const typeCheckboxes = document.querySelectorAll('.type-cb');
+        typeCheckboxes.forEach(cb => {
+            // 根据 HTML 的 defaultChecked 属性强制同步
+            cb.checked = cb.hasAttribute('checked') ? true : cb.defaultChecked;
+            cb.addEventListener('change', updateTaskVisibility);
+        });
 
-                if (checkedTypes.includes(type)) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-            
-            // 更新图例的划线状态
-            document.querySelectorAll('.type-cb').forEach(cb => {
-                const labelSpan = cb.parentElement.querySelector('span');
-                if (cb.checked) {
-                    labelSpan.style.textDecoration = 'none';
-                    labelSpan.style.opacity = '1';
-                } else {
-                    labelSpan.style.textDecoration = 'line-through';
-                    labelSpan.style.opacity = '0.5';
-                }
-            });
-        }
+        updateBoardView();
+        updateTaskVisibility();
+    }
 
-        function updateBoardView() {
-            const checkedDays = Array.from(document.querySelectorAll('.day-cb:checked')).map(cb => cb.value);
-            document.querySelectorAll('.kanban-col-container').forEach(col => {
-                const day = col.id.replace('col-', '');
-                if (checkedDays.includes(day)) {
-                    col.style.display = 'flex';
-                } else {
-                    col.style.display = 'none';
-                }
-            });
-            
-            const board = document.getElementById('kanban-board');
-            const colsCount = checkedDays.length || 1;
-            // 移动端单列展示，大屏按勾选数量分列
-            const isMobile = window.innerWidth < 768;
-            if (isMobile) {
-                board.style.gridTemplateColumns = `repeat(1, minmax(0, 1fr))`;
+    function updateTaskVisibility() {
+        const checkedTypes = Array.from(document.querySelectorAll('.type-cb:checked')).map(cb => cb.value);
+        document.querySelectorAll('.task-card').forEach(card => {
+            const isTeaching = card.classList.contains('card-teaching');
+            const isPlanned = card.classList.contains('card-planned');
+            const isFree = card.classList.contains('card-free');
+
+            let type = '';
+            if (isTeaching) type = 'teaching';
+            if (isPlanned) type = 'planned';
+            if (isFree) type = 'free';
+
+            if (checkedTypes.includes(type)) {
+                card.style.display = 'block';
             } else {
-                board.style.gridTemplateColumns = `repeat(${colsCount}, minmax(0, 1fr))`;
-            }
-        }
-
-        // 监听窗口尺寸变化，自适应调整布局
-        window.addEventListener('resize', () => {
-            if (document.getElementById('main-content') && !document.getElementById('main-content').classList.contains('hidden')) {
-                updateBoardView();
+                card.style.display = 'none';
             }
         });
 
-        // --- Countdown Logic ---
-        let nextTaskNotified = false;
+        // 更新图例的划线状态
+        document.querySelectorAll('.type-cb').forEach(cb => {
+            const labelSpan = cb.parentElement.querySelector('span');
+            if (cb.checked) {
+                labelSpan.style.textDecoration = 'none';
+                labelSpan.style.opacity = '1';
+            } else {
+                labelSpan.style.textDecoration = 'line-through';
+                labelSpan.style.opacity = '0.5';
+            }
+        });
+    }
 
-        function getNextTeachingTask() {
-            const now = new Date();
-            const currentDay = now.getDay();
-            const daysMap = { 1: "周一", 2: "周二", 3: "周三", 4: "周四", 5: "周五" };
-            
-            for (let offset = 0; offset < 7; offset++) {
-                const checkDayNum = (currentDay + offset) % 7;
-                // Skip weekend
-                if (checkDayNum === 0 || checkDayNum === 6) continue;
-                
-                const dayName = daysMap[checkDayNum];
-                const tasks = scheduleData[dayName];
-                if (!tasks) continue;
-                
-                for (const task of tasks) {
-                    if (task.type === 'teaching') {
-                        const [startStr] = task.time.split(' - ');
-                        const [hours, minutes] = startStr.split(':').map(Number);
-                        
-                        const taskTime = new Date(now);
-                        taskTime.setDate(now.getDate() + offset);
-                        taskTime.setHours(hours, minutes, 0, 0);
-                        
-                        if (taskTime > now) {
-                            return { task, time: taskTime };
-                        }
+    function updateBoardView() {
+        const checkedDays = Array.from(document.querySelectorAll('.day-cb:checked')).map(cb => cb.value);
+        document.querySelectorAll('.kanban-col-container').forEach(col => {
+            const day = col.id.replace('col-', '');
+            if (checkedDays.includes(day)) {
+                col.style.display = 'flex';
+            } else {
+                col.style.display = 'none';
+            }
+        });
+
+        const board = document.getElementById('kanban-board');
+        const colsCount = checkedDays.length || 1;
+        // 移动端单列展示，大屏按勾选数量分列
+        const isMobile = window.innerWidth < 768;
+        if (isMobile) {
+            board.style.gridTemplateColumns = `repeat(1, minmax(0, 1fr))`;
+        } else {
+            board.style.gridTemplateColumns = `repeat(${colsCount}, minmax(0, 1fr))`;
+        }
+    }
+
+    // 监听窗口尺寸变化，自适应调整布局
+    window.addEventListener('resize', () => {
+        if (document.getElementById('main-content') && !document.getElementById('main-content').classList.contains('hidden')) {
+            updateBoardView();
+        }
+    });
+
+    // --- Countdown Logic ---
+    let nextTaskNotified = false;
+
+    function getNextTeachingTask() {
+        const now = new Date();
+        const currentDay = now.getDay();
+        const daysMap = { 1: "周一", 2: "周二", 3: "周三", 4: "周四", 5: "周五" };
+
+        for (let offset = 0; offset < 7; offset++) {
+            const checkDayNum = (currentDay + offset) % 7;
+            // Skip weekend
+            if (checkDayNum === 0 || checkDayNum === 6) continue;
+
+            const dayName = daysMap[checkDayNum];
+            const tasks = scheduleData[dayName];
+            if (!tasks) continue;
+
+            for (const task of tasks) {
+                if (task.type === 'teaching') {
+                    const [startStr] = task.time.split(' - ');
+                    const [hours, minutes] = startStr.split(':').map(Number);
+
+                    const taskTime = new Date(now);
+                    taskTime.setDate(now.getDate() + offset);
+                    taskTime.setHours(hours, minutes, 0, 0);
+
+                    if (taskTime > now) {
+                        return { task, time: taskTime };
                     }
                 }
             }
-            return null;
+        }
+        return null;
+    }
+
+    function updateCountdown() {
+        const nextTaskInfo = getNextTeachingTask();
+        const countdownEl = document.getElementById('next-task-countdown');
+
+        if (!nextTaskInfo) {
+            countdownEl.classList.add('hidden');
+            return;
         }
 
-        function updateCountdown() {
-            const nextTaskInfo = getNextTeachingTask();
-            const countdownEl = document.getElementById('next-task-countdown');
-            
-            if (!nextTaskInfo) {
-                countdownEl.classList.add('hidden');
-                return;
-            }
-            
-            countdownEl.classList.remove('hidden');
-            const now = new Date();
-            const diffSeconds = Math.floor((nextTaskInfo.time - now) / 1000);
-            
-            if (diffSeconds <= 0) {
-                nextTaskNotified = false;
-                return;
-            }
-            
-            const h = Math.floor(diffSeconds / 3600);
-            const m = Math.floor((diffSeconds % 3600) / 60);
-            const s = diffSeconds % 60;
-            
-            document.getElementById('next-task-name').textContent = nextTaskInfo.task.title;
-            document.getElementById('countdown-timer').textContent = 
-                `${h > 0 ? h.toString().padStart(2, '0') + ':' : ''}${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-                
-            if (diffSeconds === 300 && !nextTaskNotified) {
-                showNotification(`提醒：距离教学任务 [${nextTaskInfo.task.title}] 还有5分钟！`);
-                nextTaskNotified = true;
-            }
+        countdownEl.classList.remove('hidden');
+        const now = new Date();
+        const diffSeconds = Math.floor((nextTaskInfo.time - now) / 1000);
+
+        if (diffSeconds <= 0) {
+            nextTaskNotified = false;
+            return;
         }
 
-        function showNotification(msg) {
-            if (Notification.permission === "granted") {
-                new Notification("日程看板提醒", { body: msg });
-            } else {
-                alert(msg);
-            }
+        const h = Math.floor(diffSeconds / 3600);
+        const m = Math.floor((diffSeconds % 3600) / 60);
+        const s = diffSeconds % 60;
+
+        document.getElementById('next-task-name').textContent = nextTaskInfo.task.title;
+        document.getElementById('countdown-timer').textContent =
+            `${h > 0 ? h.toString().padStart(2, '0') + ':' : ''}${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+
+        if (diffSeconds === 300 && !nextTaskNotified) {
+            showNotification(`提醒：距离教学任务 [${nextTaskInfo.task.title}] 还有5分钟！`);
+            nextTaskNotified = true;
+        }
+    }
+
+    function showNotification(msg) {
+        if (Notification.permission === "granted") {
+            new Notification("日程看板提醒", { body: msg });
+        } else {
+            alert(msg);
+        }
+    }
+
+    // --- Sidebar Toggle ---
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const icon = document.getElementById('sidebar-icon');
+        if (sidebar.classList.contains('translate-x-full')) {
+            sidebar.classList.remove('translate-x-full');
+            sidebar.classList.add('translate-x-0');
+            icon.textContent = '▶';
+        } else {
+            sidebar.classList.remove('translate-x-0');
+            sidebar.classList.add('translate-x-full');
+            icon.textContent = '◀';
+        }
+    }
+
+    // --- Pomodoro Logic ---
+    let focusInterval;
+    let focusTimeElapsed = 0;
+    let focusTotalTime = 0;
+    let isFocusStopwatch = false;
+
+    function startFocus(stopwatch) {
+        isFocusStopwatch = stopwatch;
+        focusTimeElapsed = 0;
+
+        if (!stopwatch) {
+            const mins = parseInt(document.getElementById('focus-duration').value) || 25;
+            focusTotalTime = mins * 60;
         }
 
-        // --- Sidebar Toggle ---
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const icon = document.getElementById('sidebar-icon');
-            if (sidebar.classList.contains('translate-x-full')) {
-                sidebar.classList.remove('translate-x-full');
-                sidebar.classList.add('translate-x-0');
-                icon.textContent = '▶';
-            } else {
-                sidebar.classList.remove('translate-x-0');
-                sidebar.classList.add('translate-x-full');
-                icon.textContent = '◀';
-            }
-        }
+        document.getElementById('focus-overlay').classList.remove('hidden');
+        document.getElementById('focus-overlay').classList.add('flex');
+        document.getElementById('trees-container').innerHTML = '';
 
-        // --- Pomodoro Logic ---
-        let focusInterval;
-        let focusTimeElapsed = 0;
-        let focusTotalTime = 0;
-        let isFocusStopwatch = false;
+        updateFocusDisplay();
 
-        function startFocus(stopwatch) {
-            isFocusStopwatch = stopwatch;
-            focusTimeElapsed = 0;
-            
-            if (!stopwatch) {
-                const mins = parseInt(document.getElementById('focus-duration').value) || 25;
-                focusTotalTime = mins * 60;
-            }
-            
-            document.getElementById('focus-overlay').classList.remove('hidden');
-            document.getElementById('focus-overlay').classList.add('flex');
-            document.getElementById('trees-container').innerHTML = '';
-            
+        focusInterval = setInterval(() => {
+            focusTimeElapsed++;
             updateFocusDisplay();
-            
-            focusInterval = setInterval(() => {
-                focusTimeElapsed++;
-                updateFocusDisplay();
-                
-                // Plant a tree every 5 minutes (300 seconds)
-                if (focusTimeElapsed > 0 && focusTimeElapsed % 300 === 0) {
-                    plantTree();
-                }
-                
-                if (!isFocusStopwatch && focusTimeElapsed >= focusTotalTime) {
-                    endFocus(true);
-                }
-            }, 1000);
-        }
 
-        function updateFocusDisplay() {
-            let displaySeconds = 0;
-            if (isFocusStopwatch) {
-                displaySeconds = focusTimeElapsed;
-            } else {
-                displaySeconds = focusTotalTime - focusTimeElapsed;
+            // Plant a tree every 5 minutes (300 seconds)
+            if (focusTimeElapsed > 0 && focusTimeElapsed % 300 === 0) {
+                plantTree();
             }
-            
-            const m = Math.floor(displaySeconds / 60);
-            const s = displaySeconds % 60;
-            document.getElementById('focus-timer-display').textContent = 
-                `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-        }
 
-        function plantTree() {
-            const tree = document.createElement('div');
-            tree.textContent = '🌲';
-            tree.className = 'text-4xl tree-enter';
-            document.getElementById('trees-container').appendChild(tree);
-        }
-
-        function endFocus(completed = false) {
-            clearInterval(focusInterval);
-            document.getElementById('focus-overlay').classList.add('hidden');
-            document.getElementById('focus-overlay').classList.remove('flex');
-            
-            if (completed) {
-                showNotification("专注时间到！请确认结束。");
-                alert("专注时间到！");
+            if (!isFocusStopwatch && focusTimeElapsed >= focusTotalTime) {
+                endFocus(true);
             }
+        }, 1000);
+    }
+
+    function updateFocusDisplay() {
+        let displaySeconds = 0;
+        if (isFocusStopwatch) {
+            displaySeconds = focusTimeElapsed;
+        } else {
+            displaySeconds = focusTotalTime - focusTimeElapsed;
         }
 
-        function updateHighlight() {
-            const now = new Date();
-            const dayOfWeek = now.getDay(); // 0 (Sun) to 6 (Sat)
-            const currentHour = now.getHours();
-            const currentMinute = now.getMinutes();
-            const currentTimeStr = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`;
+        const m = Math.floor(displaySeconds / 60);
+        const s = displaySeconds % 60;
+        document.getElementById('focus-timer-display').textContent =
+            `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
 
-            const daysMap = { 1: "周一", 2: "周二", 3: "周三", 4: "周四", 5: "周五" };
-            const currentDayName = daysMap[dayOfWeek];
+    function plantTree() {
+        const tree = document.createElement('div');
+        tree.textContent = '🌲';
+        tree.className = 'text-4xl tree-enter';
+        document.getElementById('trees-container').appendChild(tree);
+    }
 
-            // 清除所有高亮
-            document.querySelectorAll('.kanban-col-container').forEach(col => col.classList.remove('highlight-col'));
-            document.querySelectorAll('.task-card').forEach(card => card.classList.remove('highlight-task'));
+    function endFocus(completed = false) {
+        clearInterval(focusInterval);
+        document.getElementById('focus-overlay').classList.add('hidden');
+        document.getElementById('focus-overlay').classList.remove('flex');
 
-            if (currentDayName) {
-                // 高亮当前列
-                const colElement = document.getElementById(`col-${currentDayName}`);
-                if (colElement) {
-                    colElement.classList.add('highlight-col');
-                }
+        if (completed) {
+            showNotification("专注时间到！请确认结束。");
+            alert("专注时间到！");
+        }
+    }
 
-                // 高亮当前任务
-                const tasks = scheduleData[currentDayName];
-                if (tasks) {
-                    tasks.forEach((task, index) => {
-                        const [start, end] = task.time.split(' - ');
-                        if (currentTimeStr >= start && currentTimeStr < end) {
-                            const cardElement = document.getElementById(`task-${currentDayName}-${index}`);
-                            if (cardElement) {
-                                cardElement.classList.add('highlight-task');
-                                // 平滑滚动到当前任务
-                                cardElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            }
+    function updateHighlight() {
+        const now = new Date();
+        const dayOfWeek = now.getDay(); // 0 (Sun) to 6 (Sat)
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+        const currentTimeStr = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`;
+
+        const daysMap = { 1: "周一", 2: "周二", 3: "周三", 4: "周四", 5: "周五" };
+        const currentDayName = daysMap[dayOfWeek];
+
+        // 清除所有高亮
+        document.querySelectorAll('.kanban-col-container').forEach(col => col.classList.remove('highlight-col'));
+        document.querySelectorAll('.task-card').forEach(card => card.classList.remove('highlight-task'));
+
+        if (currentDayName) {
+            // 高亮当前列
+            const colElement = document.getElementById(`col-${currentDayName}`);
+            if (colElement) {
+                colElement.classList.add('highlight-col');
+            }
+
+            // 高亮当前任务
+            const tasks = scheduleData[currentDayName];
+            if (tasks) {
+                tasks.forEach((task, index) => {
+                    const [start, end] = task.time.split(' - ');
+                    if (currentTimeStr >= start && currentTimeStr < end) {
+                        const cardElement = document.getElementById(`task-${currentDayName}-${index}`);
+                        if (cardElement) {
+                            cardElement.classList.add('highlight-task');
+                            // 平滑滚动到当前任务
+                            cardElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         }
-                    });
-                }
+                    }
+                });
             }
         }
+    }
 
-        const board = document.getElementById('kanban-board');
+    const board = document.getElementById('kanban-board');
 
-        Object.entries(scheduleData).forEach(([day, tasks]) => {
-            // Create column
-            const col = document.createElement('div');
-            col.id = `col-${day}`;
-            col.className = 'kanban-col-container bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-[70vh] sm:h-[80vh] transition-all duration-300';
-            
-            // Column Header
-            const header = document.createElement('div');
-            header.className = 'p-4 border-b border-gray-100 bg-gray-50 rounded-t-xl';
-            header.innerHTML = `<h2 class="text-lg font-bold text-gray-800 text-center">${day}</h2>`;
-            col.appendChild(header);
+    Object.entries(scheduleData).forEach(([day, tasks]) => {
+        // Create column
+        const col = document.createElement('div');
+        col.id = `col-${day}`;
+        col.className = 'kanban-col-container bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-[70vh] sm:h-[80vh] transition-all duration-300';
 
-            // Column Body (Scrollable)
-            const body = document.createElement('div');
-            body.className = 'p-3 flex-1 overflow-y-auto kanban-col space-y-3';
+        // Column Header
+        const header = document.createElement('div');
+        header.className = 'p-4 border-b border-gray-100 bg-gray-50 rounded-t-xl';
+        header.innerHTML = `<h2 class="text-lg font-bold text-gray-800 text-center">${day}</h2>`;
+        col.appendChild(header);
 
-            tasks.forEach((task, index) => {
-                const card = document.createElement('div');
-                card.id = `task-${day}-${index}`;
-                card.className = `task-card p-3 rounded-lg shadow-sm text-sm transition-all duration-300 hover:scale-[1.02] cursor-default card-${task.type}`;
-                
-                card.innerHTML = `
+        // Column Body (Scrollable)
+        const body = document.createElement('div');
+        body.className = 'p-3 flex-1 overflow-y-auto kanban-col space-y-3';
+
+        tasks.forEach((task, index) => {
+            const card = document.createElement('div');
+            card.id = `task-${day}-${index}`;
+            card.className = `task-card p-3 rounded-lg shadow-sm text-sm transition-all duration-300 hover:scale-[1.02] cursor-default card-${task.type}`;
+
+            card.innerHTML = `
                     <div class="flex justify-between items-start mb-1">
                         <span class="font-semibold text-xs opacity-80">${task.time}</span>
                         <span class="text-xs font-bold bg-white/50 px-1.5 py-0.5 rounded">${task.duration}</span>
                     </div>
                     <div class="font-bold text-base mt-1 task-title">${task.title}</div>
                 `;
-                body.appendChild(card);
-            });
-
-            col.appendChild(body);
-            board.appendChild(col);
+            body.appendChild(card);
         });
-    </script>
+
+        col.appendChild(body);
+        board.appendChild(col);
+    });
+</script>
 </body>
 </html>
