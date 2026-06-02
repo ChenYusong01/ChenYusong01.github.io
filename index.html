@@ -73,28 +73,6 @@
         @keyframes popIn {
             to { transform: scale(1); }
         }
-        /* 看板列高度兜底（不依赖 Tailwind arbitrary value，确保移动端微信/Safari 等环境下也能正确撑开） */
-        .kanban-col-container {
-            min-height: 60vh;
-            height: 70vh;
-        }
-        @media (min-width: 640px) {
-            .kanban-col-container {
-                height: 80vh;
-            }
-        }
-        /* 移动端单列时，自适应内容高度，避免列高过大显得空 */
-        @media (max-width: 767px) {
-            .kanban-col-container {
-                height: auto !important;
-                max-height: none !important;
-                min-height: auto !important;
-            }
-            .kanban-col-container .kanban-col {
-                overflow-y: visible !important;
-                max-height: none !important;
-            }
-        }
     </style>
 </head>
 <body class="p-3 sm:p-6">
@@ -287,15 +265,10 @@
                 document.getElementById('auth-modal').style.display = 'none';
                 document.getElementById('main-content').classList.remove('hidden');
                 
-                // Request Notification Permission（移动端 webview 中 Notification 可能未定义，需保护）
-                try {
-                    if (typeof Notification !== 'undefined' && Notification.permission !== "granted" && Notification.permission !== "denied") {
-                        Notification.requestPermission();
-                    }
-                } catch (e) { /* 忽略：部分移动端 webview 不支持 Notification */ }
-
-                // 兜底：如果看板尚未渲染（Tailwind CDN 阻塞或 DOMContentLoaded 时序问题），手动渲染一次
-                renderKanbanBoard();
+                // Request Notification Permission
+                if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+                    Notification.requestPermission();
+                }
 
                 initViewControls();
                 updateHighlight();
@@ -589,10 +562,8 @@
                             const cardElement = document.getElementById(`task-${currentDayName}-${index}`);
                             if (cardElement) {
                                 cardElement.classList.add('highlight-task');
-                                // 仅在 PC 端自动滚动到当前任务，移动端避免页面跳动
-                                if (window.innerWidth >= 768) {
-                                    try { cardElement.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
-                                }
+                                // 平滑滚动到当前任务
+                                cardElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
                             }
                         }
                     });
@@ -602,56 +573,40 @@
 
         const board = document.getElementById('kanban-board');
 
-        // 渲染看板：封装为函数，确保在 DOM 完全就绪后再执行（兼容移动端 webview）
-        function renderKanbanBoard() {
-            const board = document.getElementById('kanban-board');
-            if (!board) return;
-            // 防止重复渲染
-            if (board.dataset.rendered === 'true') return;
-            board.dataset.rendered = 'true';
+        Object.entries(scheduleData).forEach(([day, tasks]) => {
+            // Create column
+            const col = document.createElement('div');
+            col.id = `col-${day}`;
+            col.className = 'kanban-col-container bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-[70vh] sm:h-[80vh] transition-all duration-300';
+            
+            // Column Header
+            const header = document.createElement('div');
+            header.className = 'p-4 border-b border-gray-100 bg-gray-50 rounded-t-xl';
+            header.innerHTML = `<h2 class="text-lg font-bold text-gray-800 text-center">${day}</h2>`;
+            col.appendChild(header);
 
-            Object.entries(scheduleData).forEach(([day, tasks]) => {
-                // Create column
-                const col = document.createElement('div');
-                col.id = `col-${day}`;
-                col.className = 'kanban-col-container bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col transition-all duration-300';
+            // Column Body (Scrollable)
+            const body = document.createElement('div');
+            body.className = 'p-3 flex-1 overflow-y-auto kanban-col space-y-3';
+
+            tasks.forEach((task, index) => {
+                const card = document.createElement('div');
+                card.id = `task-${day}-${index}`;
+                card.className = `task-card p-3 rounded-lg shadow-sm text-sm transition-all duration-300 hover:scale-[1.02] cursor-default card-${task.type}`;
                 
-                // Column Header
-                const header = document.createElement('div');
-                header.className = 'p-4 border-b border-gray-100 bg-gray-50 rounded-t-xl';
-                header.innerHTML = `<h2 class="text-lg font-bold text-gray-800 text-center">${day}</h2>`;
-                col.appendChild(header);
-
-                // Column Body (Scrollable)
-                const body = document.createElement('div');
-                body.className = 'p-3 flex-1 overflow-y-auto kanban-col space-y-3';
-
-                tasks.forEach((task, index) => {
-                    const card = document.createElement('div');
-                    card.id = `task-${day}-${index}`;
-                    card.className = `task-card p-3 rounded-lg shadow-sm text-sm transition-all duration-300 cursor-default card-${task.type}`;
-                    
-                    card.innerHTML = `
-                        <div class="flex justify-between items-start mb-1">
-                            <span class="font-semibold text-xs opacity-80">${task.time}</span>
-                            <span class="text-xs font-bold bg-white/50 px-1.5 py-0.5 rounded">${task.duration}</span>
-                        </div>
-                        <div class="font-bold text-base mt-1 task-title">${task.title}</div>
-                    `;
-                    body.appendChild(card);
-                });
-
-                col.appendChild(body);
-                board.appendChild(col);
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-1">
+                        <span class="font-semibold text-xs opacity-80">${task.time}</span>
+                        <span class="text-xs font-bold bg-white/50 px-1.5 py-0.5 rounded">${task.duration}</span>
+                    </div>
+                    <div class="font-bold text-base mt-1 task-title">${task.title}</div>
+                `;
+                body.appendChild(card);
             });
-        }
 
-        // DOM 就绪后立即渲染看板（不依赖 Tailwind CDN 的加载完成）
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', renderKanbanBoard);
-        } else {
-            renderKanbanBoard();
-        }
+            col.appendChild(body);
+            board.appendChild(col);
+        });
     </script>
 </body>
 </html>
